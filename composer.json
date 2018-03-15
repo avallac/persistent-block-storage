@@ -1,0 +1,17 @@
+{
+    "autoload": {
+        "psr-4": {
+            "AVAllAC\\PersistentBlockStorage\\": "src/",
+            "AVAllAC\\PersistentBlockStorage\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "react/event-loop": "^0.4.3",
+        "react/http": "^0.8.1",
+        "react/http-client": "^0.5.8",
+        "pimple/pimple": "^3.2",
+        "symfony/yaml": "^4.0",
+        "symfony/routing": "^4.0",
+        "symfony/console": "^4.0"
+    }
+}
