@@ -34,7 +34,7 @@ class CheckVolumeCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $M = 1024 * 1024 * 1024;
+        $M = 1024 * 1024;
         $volume = $input->getArgument('volume');
         if (!$this->storageManager->volumeAvailable($volume)) {
             $output->writeln('<error>Incorrect volume id</error>');
