@@ -9,7 +9,7 @@ class DeliveryKernel
 {
     private $storageManager;
 
-    public function __construct(StorageManager $storageManager)
+    public function __construct(ServerStorageManager $storageManager)
     {
         $this->storageManager = $storageManager;
     }

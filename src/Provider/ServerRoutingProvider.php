@@ -9,7 +9,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
-class RoutingProvider implements ServiceProviderInterface
+class ServerRoutingProvider implements ServiceProviderInterface
 {
     public function register(Container $pimple) : void
     {

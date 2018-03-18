@@ -7,6 +7,16 @@ class ProcessManager
     private $children;
     private $master;
 
+    public function __construct()
+    {
+        pcntl_signal(SIGHUP, function () {
+            if ($this->isMaster()) {
+                $this->signalToChildren(SIGHUP);
+                $this->waitChildren();
+            }
+        });
+    }
+
     public function fork(int $needProcess)
     {
         foreach (range(1, $needProcess) as $num) {

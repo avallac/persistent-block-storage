@@ -3,7 +3,7 @@
 namespace AVAllAC\PersistentBlockStorage\Command;
 
 use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException;
-use AVAllAC\PersistentBlockStorage\Service\StorageManager;
+use AVAllAC\PersistentBlockStorage\Service\ServerStorageManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -14,7 +14,7 @@ class CheckVolumeCommand extends Command
 {
     private $storageManager;
 
-    public function __construct(?string $name = null, ?StorageManager $storageManager = null)
+    public function __construct(?string $name = null, ?ServerStorageManager $storageManager = null)
     {
         $this->storageManager = $storageManager;
         parent::__construct($name);

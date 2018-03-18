@@ -15,7 +15,7 @@ class Kernel
     private $username;
     private $password;
 
-    public function __construct(UrlMatcherInterface $router, string $username, string $password)
+    public function __construct(UrlMatcherInterface $router, ?string $username, ?string $password)
     {
         $this->router = $router;
         $this->username = $username;
@@ -24,14 +24,16 @@ class Kernel
 
     protected function authEncode()
     {
+        if (isset($this->username) && isset($this->password)) {
+            return 'Basic ' . base64_encode($this->username . ':' . $this->password);
+        }
         return null;
-        return 'Basic ' . base64_encode($this->username . ':' . $this->password);
     }
 
-    public function route(ServerRequestInterface $request) : string
+    public function route(ServerRequestInterface $request) : object
     {
-        $authString = $this->authEncode();
-        if ($authString === $request->getHeader('authorization')[0]) {
+        $authString = $request->getHeader('authorization')[0] ?? null;
+        if ($authString === $this->authEncode()) {
             $params = ['request' => $request];
             $route = $request->getUri()->getPath();
             $matched = $this->router->match($route);
@@ -44,11 +46,10 @@ class Kernel
         }
     }
 
-    public function handle(ServerRequestInterface $request) : Response
+    public function handle(ServerRequestInterface $request) : object
     {
         try {
-            $response = $this->route($request);
-            return new Response(200, ['Content-Type' => 'text/plain'], $response);
+            return $response = $this->route($request);
         } catch (InvalidParameterException $e) {
             return new Response(400, ['Content-Type' => 'text/plain'], $e->getMessage());
         } catch (UnauthorizedException $e) {

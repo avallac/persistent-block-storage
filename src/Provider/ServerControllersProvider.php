@@ -6,12 +6,12 @@ use AVAllAC\PersistentBlockStorage\Controller\StatusController;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
-class ControllersProvider implements ServiceProviderInterface
+class ServerControllersProvider implements ServiceProviderInterface
 {
     public function register(Container $pimple) : void
     {
         $pimple['statusController'] = function () use ($pimple) {
-            return new StatusController($pimple['microTime'], $pimple['storageManager']);
+            return new StatusController($pimple['microTime'], $pimple['serverStorageManager']);
         };
     }
 }

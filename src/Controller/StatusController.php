@@ -3,14 +3,14 @@
 namespace AVAllAC\PersistentBlockStorage\Controller;
 
 use AVAllAC\PersistentBlockStorage\Service\MicroTime;
-use AVAllAC\PersistentBlockStorage\Service\StorageManager;
+use AVAllAC\PersistentBlockStorage\Service\ServerStorageManager;
 
 class StatusController
 {
     private $microTime;
     private $storageManager;
 
-    public function __construct(MicroTime $microTime, StorageManager $storageManager)
+    public function __construct(MicroTime $microTime, ServerStorageManager $storageManager)
     {
         $this->microTime = $microTime;
         $this->storageManager = $storageManager;

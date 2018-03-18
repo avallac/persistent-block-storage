@@ -6,7 +6,7 @@ use AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException;
 use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException;
 use AVAllAC\PersistentBlockStorage\Exception\ResourceNotFoundException;
 
-class StorageManager
+class ServerStorageManager
 {
     private $volumes;
 

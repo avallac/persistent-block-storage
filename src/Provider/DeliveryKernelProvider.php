@@ -11,7 +11,7 @@ class DeliveryKernelProvider implements ServiceProviderInterface
     public function register(Container $pimple) : void
     {
         $pimple['deliveryKernel'] = function () use ($pimple) {
-            return new DeliveryKernel($pimple['storageManager']);
+            return new DeliveryKernel($pimple['serverStorageManager']);
         };
     }
 }
