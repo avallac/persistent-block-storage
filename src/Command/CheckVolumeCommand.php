@@ -54,6 +54,7 @@ class CheckVolumeCommand extends Command
         fseek($volumeResource, 0);
         $hashFunc = hash_init('md5');
         $counted = 0;
+        $lastUpdate = 0;
         while ($counted < $volumeSize) {
             $needRead = min($M, $volumeSize - $counted);
             $data = fread($volumeResource, $needRead);
@@ -61,7 +62,11 @@ class CheckVolumeCommand extends Command
                 throw new \Exception('Unable to read data');
             }
             $counted += $needRead;
-            $progressBar->setProgress($counted/$M);
+            $now = microtime(true);
+            if (($now - $lastUpdate) > 1) {
+                $progressBar->setProgress($counted / $M);
+                $lastUpdate = $now;
+            }
             hash_update($hashFunc, $data);
         }
         $progressBar->finish();
