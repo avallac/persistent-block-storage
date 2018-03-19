@@ -13,11 +13,22 @@ class CoreRoutingProvider implements ServiceProviderInterface
 {
     public function register(Container $pimple) : void
     {
-        $pimple['router'] = function () use ($pimple) {
+        $pimple['routes'] = function () use ($pimple) {
             $routes = new RouteCollection();
-            $route = new Route('/storage/{file}.{type}', ['_controller' => [$pimple['fileController'], 'get']]);
+            $pattern = '/storage/original/{file}.{type}';
+            $route = new Route($pattern, ['_controller' => [$pimple['fileController'], 'getOriginal']]);
             $routes->add('storage', $route);
-            return new UrlMatcher($routes, new RequestContext('/'));
+            $pattern = '/storage/resize/{format}/{file}.{type}';
+            $route = new Route($pattern, ['_controller' => [$pimple['fileController'], 'getResized']]);
+            $routes->add('resized', $route);
+            $pattern = '/volume/export/{volume}';
+            $route = new Route($pattern, ['_controller' => [$pimple['volumeController'], 'serialize']]);
+            $routes->add('volumeHeaders', $route);
+            return $routes;
+        };
+
+        $pimple['router'] = function () use ($pimple) {
+            return new UrlMatcher($pimple['routes'], new RequestContext('/'));
         };
     }
 }

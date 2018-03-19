@@ -15,6 +15,7 @@ $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\HeaderStorageProv
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreControllersProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ImagickProvider());
 
 $server = new Server([$pimple['kernel'], 'handle']);
 $socket = new React\Socket\Server($pimple['config']['manager']['bind'], $pimple['loop']);

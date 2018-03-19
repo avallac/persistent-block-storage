@@ -4,28 +4,43 @@ namespace AVAllAC\PersistentBlockStorage\Command;
 
 use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException;
 use AVAllAC\PersistentBlockStorage\Service\ServerStorageManager;
+use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 
-class CheckVolumeCommand extends Command
+class DeepCheckVolumeCommand extends Command
 {
     private $storageManager;
+    private $urlGenerator;
 
-    public function __construct(?string $name = null, ?ServerStorageManager $storageManager = null)
-    {
+    public function __construct(
+        ?string $name,
+        ?ServerStorageManager $storageManager,
+        UrlGenerator $urlGenerator
+    ) {
         $this->storageManager = $storageManager;
+        $this->urlGenerator = $urlGenerator;
         parent::__construct($name);
     }
 
     protected function configure()
     {
         $this
-            ->setName('check:volume')
+            ->setName('check:volume:elements')
             ->setDescription('Check md5sum for volume')
             ->addArgument('volume', InputArgument::REQUIRED, 'Volume ID');
+    }
+
+    protected function getHeaders($volume)
+    {
+        $client = new Client();
+        $url = $this->urlGenerator->generate('volumeHeaders', ['volume' => $volume]);
+        $request = $client->request('GET', $url);
+        return json_decode($request->getBody(), true);
     }
 
     /**
@@ -34,7 +49,6 @@ class CheckVolumeCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $M = 1024 * 1024;
         $volume = $input->getArgument('volume');
         if (!$this->storageManager->volumeAvailable($volume)) {
             $output->writeln('<error>Incorrect volume id</error>');
@@ -42,47 +56,36 @@ class CheckVolumeCommand extends Command
         }
         $volumeResource = $this->storageManager->getVolumeResource($volume);
         $output->writeln([
-            '<fg=yellow;options=bold,underscore>Volume checking</>',
+            '<fg=yellow;options=bold,underscore>Volume deep checking</>',
             '',
             'Path: <comment>' . $this->storageManager->getVolumePath($volume) . '</comment>',
             ''
         ]);
-        $volumeSize = $this->storageManager->getVolumeSize($volume);
-        $progressBar = new ProgressBar($output, ceil($volumeSize / $M));
+        $headers = $this->getHeaders($volume);
+        $elements = count($headers);
+        $progressBar = new ProgressBar($output, $elements);
         $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%');
         $progressBar->start();
-        fseek($volumeResource, 0);
-        $hashFunc = hash_init('md5');
-        $counted = 0;
         $lastUpdate = 0;
-        while ($counted < $volumeSize) {
-            $needRead = min($M, $volumeSize - $counted);
-            $data = fread($volumeResource, $needRead);
-            if (strlen($data) !== $needRead) {
-                throw new \Exception('Unable to read data');
+        $now = 0;
+        $counted = 0;
+        foreach ($headers as $element) {
+            fseek($volumeResource, $element['seek']);
+            $data = fread($volumeResource, $element['size']);
+            if (md5($data) !== $element['md5']) {
+                var_dump($element);
+                $output->writeln('<fg=red;options=bold,blink>Check failed</>');
+                exit;
             }
-            $counted += $needRead;
-            $now = microtime(true);
+            $counted++;
             if (($now - $lastUpdate) > 1) {
-                $progressBar->setProgress($counted / $M);
+                $progressBar->setProgress($counted);
                 $lastUpdate = $now;
             }
-            hash_update($hashFunc, $data);
+            $now = microtime(true);
         }
         $progressBar->finish();
         $expectedMD5 = $this->storageManager->getVolumeHash($volume);
-        $resultMD5 = hash_final($hashFunc);
-        $output->writeln([
-            '',
-            '',
-            'Expected MD5: <comment>' . $expectedMD5 . '</comment>',
-            'Result   MD5: <comment>' . $resultMD5 . '</comment>',
-            ''
-        ]);
-        if ($resultMD5 === $expectedMD5) {
-            $output->writeln('<fg=blue;options=bold>Check completed successfully</>');
-        } else {
-            $output->writeln('<fg=red;options=bold,blink>Check failed</>');
-        }
+        $output->writeln('<fg=blue;options=bold>Check completed successfully</>');
     }
 }
