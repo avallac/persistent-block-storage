@@ -35,12 +35,12 @@ class DeepCheckVolumeCommand extends Command
             ->addArgument('volume', InputArgument::REQUIRED, 'Volume ID');
     }
 
-    protected function getHeaders($volume)
+    protected function getBinHeaders($volume)
     {
         $client = new Client();
         $url = $this->urlGenerator->generate('volumeHeaders', ['volume' => $volume]);
         $request = $client->request('GET', $url);
-        return json_decode($request->getBody(), true);
+        return $request->getBody();
     }
 
     /**
@@ -61,20 +61,29 @@ class DeepCheckVolumeCommand extends Command
             'Path: <comment>' . $this->storageManager->getVolumePath($volume) . '</comment>',
             ''
         ]);
-        $headers = $this->getHeaders($volume);
-        $elements = count($headers);
+        $headers = $this->getBinHeaders($volume);
+        $elements = strlen($headers)/32;
         $progressBar = new ProgressBar($output, $elements);
         $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%');
         $progressBar->start();
         $lastUpdate = 0;
         $now = 0;
         $counted = 0;
-        foreach ($headers as $element) {
+        for ($pos = 0; $pos < $elements; $pos++) {
+            $elementBin = substr($headers, $pos * 32, 32);
+            $element = unpack('a16md5/Jseek/Jsize', $elementBin);
             fseek($volumeResource, $element['seek']);
             $data = fread($volumeResource, $element['size']);
-            if (md5($data) !== $element['md5']) {
+            if (md5($data, true) !== $element['md5']) {
                 var_dump($element);
+                $output->writeln([
+                    'Seek :' . $element['seek'] . ' ' . 'Size: ' . $element['size'],
+                    'Expected MD5: <comment>' . bin2hex($element['md5']) . '</comment>',
+                    'Result   MD5: <comment>' . md5($data) . '</comment>',
+                    ''
+                ]);
                 $output->writeln('<fg=red;options=bold,blink>Check failed</>');
+                $output->writeln('');
                 exit;
             }
             $counted++;
@@ -85,7 +94,7 @@ class DeepCheckVolumeCommand extends Command
             $now = microtime(true);
         }
         $progressBar->finish();
-        $expectedMD5 = $this->storageManager->getVolumeHash($volume);
         $output->writeln('<fg=blue;options=bold>Check completed successfully</>');
+        $output->writeln('');
     }
 }

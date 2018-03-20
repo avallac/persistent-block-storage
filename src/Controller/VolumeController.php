@@ -16,6 +16,6 @@ class VolumeController extends BaseController
 
     public function serialize(Request $request, string $volume)
     {
-        return $this->jsonResponse(200, $this->headerStorage->export((int)$volume));
+        return $this->binResponse(200, $this->headerStorage->export((int)$volume));
     }
 }
