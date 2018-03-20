@@ -8,7 +8,7 @@ class BaseController
 {
     public function binResponse(int $code, $data) : Response
     {
-        return $this->response($code, json_encode($data), 'application/octet-stream');
+        return $this->response($code, $data, 'application/octet-stream');
     }
 
     public function jsonResponse(int $code, $data) : Response

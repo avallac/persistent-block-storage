@@ -40,7 +40,7 @@ class DeepCheckVolumeCommand extends Command
         $client = new Client();
         $url = $this->urlGenerator->generate('volumeHeaders', ['volume' => $volume]);
         $request = $client->request('GET', $url);
-        return $request->getBody();
+        return $request->getBody()->getContents();
     }
 
     /**
@@ -75,7 +75,6 @@ class DeepCheckVolumeCommand extends Command
             fseek($volumeResource, $element['seek']);
             $data = fread($volumeResource, $element['size']);
             if (md5($data, true) !== $element['md5']) {
-                var_dump($element);
                 $output->writeln([
                     'Seek :' . $element['seek'] . ' ' . 'Size: ' . $element['size'],
                     'Expected MD5: <comment>' . bin2hex($element['md5']) . '</comment>',

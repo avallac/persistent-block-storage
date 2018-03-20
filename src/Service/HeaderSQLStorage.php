@@ -24,7 +24,7 @@ class HeaderSQLStorage implements HeaderStorage
         $sql = 'SELECT md5, seek, size FROM storage WHERE volume = :VOLUME ORDER BY seek';
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':VOLUME' => $volume]);
-        foreach ($stmt->fetch(\PDO::FETCH_ASSOC) as $e) {
+        while ($e = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $output .= pack('a16J2', hex2bin($e['md5']), $e['seek'], $e['size']);
         }
         return $output;
