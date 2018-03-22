@@ -19,7 +19,7 @@ class DeepCheckVolumeCommand extends Command
 
     public function __construct(
         ?string $name,
-        ?ServerStorageManager $storageManager,
+        ServerStorageManager $storageManager,
         UrlGenerator $urlGenerator
     ) {
         $this->storageManager = $storageManager;
@@ -44,27 +44,23 @@ class DeepCheckVolumeCommand extends Command
     }
 
     /**
+     * @param $volume
+     * @param $output
      * @throws IncorrectVolumeException
-     * @throws \Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function checkVolume($volume, $output)
     {
-        $volume = $input->getArgument('volume');
         if (!$this->storageManager->volumeAvailable($volume)) {
             $output->writeln('<error>Incorrect volume id</error>');
             exit;
         }
         $volumeResource = $this->storageManager->getVolumeResource($volume);
-        $output->writeln([
-            '<fg=yellow;options=bold,underscore>Volume deep checking</>',
-            '',
-            'Path: <comment>' . $this->storageManager->getVolumePath($volume) . '</comment>',
-            ''
-        ]);
         $headers = $this->getBinHeaders($volume);
-        $elements = strlen($headers)/32;
+        $elements = strlen($headers) / 32;
         $progressBar = new ProgressBar($output, $elements);
-        $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%');
+        $format = '%message% %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%';
+        $progressBar->setFormat($format);
+        $progressBar->setMessage($this->storageManager->getVolumePath($volume));
         $progressBar->start();
         $lastUpdate = 0;
         $now = 0;
@@ -93,6 +89,27 @@ class DeepCheckVolumeCommand extends Command
             $now = microtime(true);
         }
         $progressBar->finish();
+        $output->writeln('');
+    }
+
+    /**
+     * @throws IncorrectVolumeException
+     * @throws \Exception
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $output->writeln([
+            '',
+            '<fg=yellow;options=bold,underscore>Volume deep checking</>',
+            ''
+        ]);
+        $volumes = preg_replace_callback('/(\d+)-(\d+)/', function ($m) {
+            return implode(',', range($m[1], $m[2]));
+        }, $input->getArgument('volume'));
+        foreach (explode(',', $volumes) as $volume) {
+            $this->checkVolume($volume, $output);
+        }
+        $output->writeln('');
         $output->writeln('<fg=blue;options=bold>Check completed successfully</>');
         $output->writeln('');
     }
