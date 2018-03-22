@@ -13,7 +13,12 @@ class BaseController
 
     public function jsonResponse(int $code, $data) : Response
     {
-        return $this->response($code, json_encode($data), 'application/json');
+        return $this->response($code, json_encode($data, JSON_FORCE_OBJECT), 'application/json');
+    }
+
+    public function htmlResponse(int $code, string $text) : Response
+    {
+        return $this->response($code, $text, 'text/html');
     }
 
     public function textResponse(int $code, string $text) : Response

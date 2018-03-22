@@ -82,7 +82,10 @@ class ServerStorageManager
     {
         $export = [];
         foreach ($this->volumes as $id => $volume) {
-            $export[$id] = $volume['size'];
+            $export[$id] = [
+                'size' => $volume['size'],
+                'path' => $volume['path']
+            ];
         }
         return $export;
     }

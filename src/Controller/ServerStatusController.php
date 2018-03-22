@@ -4,8 +4,9 @@ namespace AVAllAC\PersistentBlockStorage\Controller;
 
 use AVAllAC\PersistentBlockStorage\Service\MicroTime;
 use AVAllAC\PersistentBlockStorage\Service\ServerStorageManager;
+use React\Http\Response;
 
-class StatusController
+class ServerStatusController extends BaseController
 {
     private $microTime;
     private $storageManager;
@@ -16,11 +17,11 @@ class StatusController
         $this->storageManager = $storageManager;
     }
 
-    public function status() : string
+    public function status() : Response
     {
-        return json_encode([
+        return $this->jsonResponse(200, [
             'uptime' => $this->microTime->get() - $this->microTime->getInitTime(),
             'volumes' => $this->storageManager->export()
-        ], JSON_FORCE_OBJECT);
+        ]);
     }
 }

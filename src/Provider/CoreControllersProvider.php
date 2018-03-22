@@ -2,6 +2,7 @@
 
 namespace AVAllAC\PersistentBlockStorage\Provider;
 
+use AVAllAC\PersistentBlockStorage\Controller\CoreStatusController;
 use AVAllAC\PersistentBlockStorage\Controller\FileController;
 use AVAllAC\PersistentBlockStorage\Controller\VolumeController;
 use Pimple\Container;
@@ -23,6 +24,13 @@ class CoreControllersProvider implements ServiceProviderInterface
         $pimple['volumeController'] = function () use ($pimple) {
             return new VolumeController(
                 $pimple['headerStorage']
+            );
+        };
+
+        $pimple['statusController'] = function () use ($pimple) {
+            return new CoreStatusController(
+                $pimple['coreSummary'],
+                $pimple['twig']
             );
         };
     }

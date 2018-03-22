@@ -24,6 +24,8 @@ class CoreRoutingProvider implements ServiceProviderInterface
             $pattern = '/volume/export/{volume}';
             $route = new Route($pattern, ['_controller' => [$pimple['volumeController'], 'serialize']]);
             $routes->add('volumeHeaders', $route);
+            $route = new Route('/summary', ['_controller' => [$pimple['statusController'], 'summary']]);
+            $routes->add('summary', $route);
             return $routes;
         };
 
