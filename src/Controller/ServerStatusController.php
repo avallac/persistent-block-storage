@@ -11,12 +11,20 @@ class ServerStatusController extends BaseController
     private $microTime;
     private $storageManager;
 
+    /**
+     * ServerStatusController constructor.
+     * @param MicroTime $microTime
+     * @param ServerStorageManager $storageManager
+     */
     public function __construct(MicroTime $microTime, ServerStorageManager $storageManager)
     {
         $this->microTime = $microTime;
         $this->storageManager = $storageManager;
     }
 
+    /**
+     * @return Response
+     */
     public function status() : Response
     {
         return $this->jsonResponse(200, [

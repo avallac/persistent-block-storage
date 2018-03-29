@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace AVAllAC\PersistentBlockStorage\Service;
 
@@ -7,6 +7,10 @@ class CoreStorageManager
     private $volumes;
     private $servers;
 
+    /**
+     * CoreStorageManager constructor.
+     * @param array $servers
+     */
     public function __construct(array $servers)
     {
         $this->servers = $servers;
@@ -27,18 +31,36 @@ class CoreStorageManager
         }
     }
 
-    public function getUrl(int $volume, int $seek, int $size) : string
+    /**
+     * @param int $volume
+     * @return string
+     */
+    public function getServerAdminUrl(int $volume) : string
     {
-        $basePath = $this->volumes[$volume]['server']['deliveryUrl'];
-        return  $basePath . '/?volume=' . $volume . '&seek=' . $seek . '&size=' . $size;
+        return $this->volumes[$volume]['server']['adminUrl'];
     }
 
-    public function getServers()
+    /**
+     * @param int $volume
+     * @return string
+     */
+    public function getServerDeliveryUrl(int $volume) : string
+    {
+        return $this->volumes[$volume]['server']['deliveryUrl'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getServers() : array
     {
         return $this->servers;
     }
 
-    public function getVolumes()
+    /**
+     * @return array
+     */
+    public function getVolumes() : array
     {
         return $this->volumes;
     }

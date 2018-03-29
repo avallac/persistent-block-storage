@@ -15,6 +15,12 @@ class Kernel
     private $username;
     private $password;
 
+    /**
+     * Kernel constructor.
+     * @param UrlMatcherInterface $router
+     * @param null|string $username
+     * @param null|string $password
+     */
     public function __construct(UrlMatcherInterface $router, ?string $username, ?string $password)
     {
         $this->router = $router;
@@ -22,7 +28,10 @@ class Kernel
         $this->password = $password;
     }
 
-    protected function authEncode()
+    /**
+     * @return null|string
+     */
+    protected function authEncode() : ?string
     {
         if (isset($this->username) && isset($this->password)) {
             return 'Basic ' . base64_encode($this->username . ':' . $this->password);
@@ -30,6 +39,11 @@ class Kernel
         return null;
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return object
+     * @throws UnauthorizedException
+     */
     public function route(ServerRequestInterface $request) : object
     {
         $authString = $request->getHeader('authorization')[0] ?? null;
@@ -46,6 +60,10 @@ class Kernel
         }
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return object
+     */
     public function handle(ServerRequestInterface $request) : object
     {
         try {

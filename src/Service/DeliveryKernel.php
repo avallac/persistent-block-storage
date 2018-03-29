@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace AVAllAC\PersistentBlockStorage\Service;
 
+use AVAllAC\PersistentBlockStorage\Model\StoragePosition;
 use Psr\Http\Message\ServerRequestInterface;
 use React\Http\Response;
 
@@ -9,21 +10,29 @@ class DeliveryKernel
 {
     private $storageManager;
 
+    /**
+     * DeliveryKernel constructor.
+     * @param ServerStorageManager $storageManager
+     */
     public function __construct(ServerStorageManager $storageManager)
     {
         $this->storageManager = $storageManager;
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return Response
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\VolumeReadException
+     */
     public function handle(ServerRequestInterface $request)
     {
-        $seek = $request->getQueryParams()['seek'] ?? null;
-        $size = $request->getQueryParams()['size'] ?? null;
-        $volume = $request->getQueryParams()['volume'] ?? null;
-        if (isset($seek) && isset($size) && isset($volume)) {
-            $body = $this->storageManager->read($volume, $seek, $size);
-            return new Response(200, ['Content-Type' => 'text/plain'], $body);
-        } else {
-            return new Response(404, ['Content-Type' => 'text/plain'], 'error');
-        }
+        $volume = $request->getQueryParams()['volume'] ?? 0;
+        $seek = $request->getQueryParams()['seek'] ?? 0;
+        $size = $request->getQueryParams()['size'] ?? 0;
+        $position = new StoragePosition((int)$volume, (int)$seek, (int)$size);
+        $body = $this->storageManager->read($position);
+        return new Response(200, ['Content-Type' => 'text/plain'], $body);
     }
 }

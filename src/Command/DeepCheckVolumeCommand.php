@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace AVAllAC\PersistentBlockStorage\Command;
 
@@ -60,7 +60,7 @@ class DeepCheckVolumeCommand extends Command
         $progressBar = new ProgressBar($output, $elements);
         $format = '%message% %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%';
         $progressBar->setFormat($format);
-        $progressBar->setMessage($this->storageManager->getVolumePath($volume));
+        $progressBar->setMessage($volume . ':' . $this->storageManager->getVolumePath($volume));
         $progressBar->start();
         $lastUpdate = 0;
         $now = 0;

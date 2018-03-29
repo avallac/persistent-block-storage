@@ -8,6 +8,9 @@ use Pimple\ServiceProviderInterface;
 
 class KernelProvider implements ServiceProviderInterface
 {
+    /**
+     * @param Container $pimple
+     */
     public function register(Container $pimple) : void
     {
         $pimple['kernel'] = function () use ($pimple) {

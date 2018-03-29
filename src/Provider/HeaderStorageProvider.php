@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace AVAllAC\PersistentBlockStorage\Provider;
 
@@ -9,6 +9,9 @@ use Pimple\ServiceProviderInterface;
 
 class HeaderStorageProvider implements ServiceProviderInterface
 {
+    /**
+     * @param Container $pimple
+     */
     public function register(Container $pimple) : void
     {
         $pimple['headerStorage'] = function () use ($pimple) {

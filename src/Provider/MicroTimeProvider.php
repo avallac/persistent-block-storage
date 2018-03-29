@@ -8,6 +8,9 @@ use Pimple\ServiceProviderInterface;
 
 class MicroTimeProvider implements ServiceProviderInterface
 {
+    /**
+     * @param Container $pimple
+     */
     public function register(Container $pimple) : void
     {
         $pimple['microTime'] = new MicroTime();

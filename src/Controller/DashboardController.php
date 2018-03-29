@@ -1,15 +1,21 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace AVAllAC\PersistentBlockStorage\Controller;
 
-use AVAllAC\PersistentBlockStorage\Service\CoreSummary;
+use AVAllAC\PersistentBlockStorage\Service\CoreVolumesSummary;
+use GuzzleHttp\Client;
 
-class CoreStatusController extends BaseController
+class DashboardController extends BaseController
 {
     private $twig;
     private $coreSummary;
 
-    public function __construct(CoreSummary $coreSummary, \Twig_Environment $twig)
+    /**
+     * CoreStatusController constructor.
+     * @param CoreVolumesSummary $coreSummary
+     * @param \Twig_Environment $twig
+     */
+    public function __construct(CoreVolumesSummary $coreSummary, \Twig_Environment $twig)
     {
         $this->coreSummary = $coreSummary;
         $this->twig = $twig;

@@ -7,6 +7,9 @@ use Pimple\ServiceProviderInterface;
 
 class DatabaseProvider implements ServiceProviderInterface
 {
+    /**
+     * @param Container $pimple
+     */
     public function register(Container $pimple) : void
     {
         $pimple['db'] = function () use ($pimple) {

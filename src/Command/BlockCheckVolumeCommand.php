@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace AVAllAC\PersistentBlockStorage\Command;
 
@@ -14,13 +14,18 @@ class BlockCheckVolumeCommand extends Command
 {
     private $storageManager;
 
+    /**
+     * BlockCheckVolumeCommand constructor.
+     * @param null|string $name
+     * @param ServerStorageManager|null $storageManager
+     */
     public function __construct(?string $name = null, ?ServerStorageManager $storageManager = null)
     {
         $this->storageManager = $storageManager;
         parent::__construct($name);
     }
 
-    protected function configure()
+    protected function configure() : void
     {
         $this
             ->setName('check:volume:block')
@@ -29,10 +34,12 @@ class BlockCheckVolumeCommand extends Command
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
      * @throws IncorrectVolumeException
      * @throws \Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output) : void
     {
         $M = 1024 * 1024;
         $volume = $input->getArgument('volume');
@@ -48,7 +55,7 @@ class BlockCheckVolumeCommand extends Command
             ''
         ]);
         $volumeSize = $this->storageManager->getVolumeSize($volume);
-        $progressBar = new ProgressBar($output, ceil($volumeSize / $M));
+        $progressBar = new ProgressBar($output, (int)ceil($volumeSize / $M));
         $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%');
         $progressBar->start();
         fseek($volumeResource, 0);

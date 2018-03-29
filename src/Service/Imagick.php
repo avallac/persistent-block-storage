@@ -4,7 +4,12 @@ namespace AVAllAC\PersistentBlockStorage\Service;
 
 class Imagick
 {
-    public function thumb($format, $blobImage)
+    /**
+     * @param string $format
+     * @param string $blobImage
+     * @return string
+     */
+    public function thumb(string $format, string $blobImage) : string
     {
         $x_pos = strpos($format, 'x');
         $dash_pos = strpos($format, '-');
