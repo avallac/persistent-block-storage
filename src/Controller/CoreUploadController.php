@@ -42,25 +42,25 @@ class CoreUploadController extends BaseController
             return $this->textResponse(405, 'Method Not Allowed');
         }
         $data = $request->getBody()->getContents();
-        $promise =  new Promise(function ($resolve, $reject) use ($data) {
+        $promise =  new Promise(function ($resolve, $reject) use ($data, &$promise) {
             while ($this->runningPromise) {
                 await($this->runningPromise, $this->loop);
             }
+            $this->runningPromise = $promise;
             $md5 = md5($data);
             try {
                 $this->headerStorage->beginTransaction();
                 if (!$this->headerStorage->checkExists($md5)) {
                     $storagePosition = $this->headerStorage->insert($md5, strlen($data));
-                    $promise = $this->serverAPI->upload($storagePosition, $data);
-                    $this->runningPromise = $promise;
-                    await($promise, $this->loop);
-                    $this->runningPromise = null;
+                    $request = $this->serverAPI->upload($storagePosition, $data);
+                    await($request, $this->loop);
                 }
                 $resolve(new Response(200, [], 'OK'));
                 $this->headerStorage->commit();
-            } catch (\Exception $e) {
                 $this->runningPromise = null;
+            } catch (\Exception $e) {
                 $this->headerStorage->rollBack();
+                $this->runningPromise = null;
                 throw $e;
             }
         });
