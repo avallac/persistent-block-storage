@@ -54,14 +54,14 @@ class CoreUploadController extends BaseController
                     $promise = $this->serverAPI->upload($storagePosition, $data);
                     $this->runningPromise = $promise;
                     await($promise, $this->loop);
+                    $this->runningPromise = null;
                 }
                 $resolve(new Response(200, [], 'OK'));
                 $this->headerStorage->commit();
             } catch (\Exception $e) {
+                $this->runningPromise = null;
                 $this->headerStorage->rollBack();
                 throw $e;
-            } finally {
-                $this->runningPromise = null;
             }
         });
         return $promise;
