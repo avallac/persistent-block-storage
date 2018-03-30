@@ -16,6 +16,7 @@
         "wyrihaximus/react-http-middleware-webroot-preload": "^1.2",
         "twig/twig": "^2.4",
         "clue/buzz-react": "^2.3",
-        "clue/block-react": "^1.2"
+        "clue/block-react": "^1.2",
+        "guzzlehttp/guzzle": "^6.3"
     }
 }

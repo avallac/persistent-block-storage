@@ -50,6 +50,7 @@ class DeepCheckVolumeCommand extends Command
      */
     protected function checkVolume($volume, $output)
     {
+        $volume = (int)$volume;
         if (!$this->storageManager->volumeAvailable($volume)) {
             $output->writeln('<error>Incorrect volume id</error>');
             exit;

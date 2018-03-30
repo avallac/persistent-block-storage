@@ -11,11 +11,13 @@ $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/c
 $pimple['fileController'] = null;
 $pimple['volumeController'] = null;
 $pimple['statusController'] = null;
+$pimple['dashboardController'] = null;
+$pimple['coreUploadController'] = null;
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
-$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreUrlGeneratorProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
 
 $application = new \Symfony\Component\Console\Application();
 $application->add(new BlockCheckVolumeCommand(null, $pimple['serverStorageManager']));
-$application->add(new DeepCheckVolumeCommand(null, $pimple['serverStorageManager'], $pimple['urlGenerator']));
+$application->add(new DeepCheckVolumeCommand(null, $pimple['serverStorageManager'], $pimple['coreUrlGenerator']));
 $application->run();
