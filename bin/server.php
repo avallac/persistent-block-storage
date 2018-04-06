@@ -34,6 +34,7 @@ $processManager->fork(8);
 if ($processManager->isMaster()) {
     $socketAdmin = new React\Socket\Server($pimple['config']['server']['bindAdmin'], $pimple['loop']);
     $adminServer->listen($socketAdmin);
+    $socket->close();
 } else {
     $server->listen($socket);
 }

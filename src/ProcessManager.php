@@ -17,15 +17,15 @@ class ProcessManager
         });
     }
 
-    public function fork(int $needProcess)
+    public function fork(int $needChildProcess)
     {
-        foreach (range(1, $needProcess) as $num) {
+        $this->master = true;
+        for ($num = 0; $num < $needChildProcess; $num++) {
             $pid = pcntl_fork();
             if ($pid == -1) {
                 die('Не удалось породить дочерний процесс');
             } elseif ($pid) {
                 $this->children[$num] = $pid;
-                $this->master = true;
             } else {
                 $this->master = false;
                 return;
