@@ -35,6 +35,7 @@ class CoreUploadController extends BaseController
     /**
      * @param Request $request
      * @return PromiseInterface
+     * @throws \Exception
      */
     public function upload(Request $request) : PromiseInterface
     {
@@ -42,28 +43,37 @@ class CoreUploadController extends BaseController
             return $this->textResponse(405, 'Method Not Allowed');
         }
         $data = $request->getBody()->getContents();
-        $promise =  new Promise(function ($resolve, $reject) use ($data, &$promise) {
-            while ($this->runningPromise) {
-                await($this->runningPromise, $this->loop);
-            }
-            $this->runningPromise = $promise;
+        while ($this->runningPromise) {
+            await($this->runningPromise, $this->loop);
+        }
+        $this->runningPromise = new Promise(function ($resolve, $reject) use ($data) {
             $md5 = md5($data);
             try {
                 $this->headerStorage->beginTransaction();
                 if (!$this->headerStorage->checkExists($md5)) {
                     $storagePosition = $this->headerStorage->insert($md5, strlen($data));
                     $request = $this->serverAPI->upload($storagePosition, $data);
-                    await($request, $this->loop);
+                    $request->then(function () use ($resolve) {
+                        $this->headerStorage->commit();
+                        $this->runningPromise = null;
+                        $resolve(new Response(200, [], 'OK'));
+                    }, function () use ($resolve) {
+                        $this->headerStorage->rollBack();
+                        $this->runningPromise = null;
+                        $resolve(new Response(503, [], 'Error'));
+                    });
+                } else {
+                    $this->headerStorage->commit();
+                    $this->runningPromise = null;
+                    $resolve(new Response(200, [], 'OK'));
                 }
-                $resolve(new Response(200, [], 'OK'));
-                $this->headerStorage->commit();
-                $this->runningPromise = null;
             } catch (\Exception $e) {
                 $this->headerStorage->rollBack();
                 $this->runningPromise = null;
-                throw $e;
+                var_dump($e->getMessage());
+                $resolve(new Response(503, [], 'Error'));
             }
         });
-        return $promise;
+        return $this->runningPromise;
     }
 }
