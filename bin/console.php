@@ -13,6 +13,7 @@ $pimple['volumeController'] = null;
 $pimple['statusController'] = null;
 $pimple['dashboardController'] = null;
 $pimple['coreUploadController'] = null;
+$pimple['reportController'] = null;
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
