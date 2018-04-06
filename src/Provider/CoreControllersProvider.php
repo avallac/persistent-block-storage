@@ -5,6 +5,7 @@ namespace AVAllAC\PersistentBlockStorage\Provider;
 use AVAllAC\PersistentBlockStorage\Controller\DashboardController;
 use AVAllAC\PersistentBlockStorage\Controller\CoreUploadController;
 use AVAllAC\PersistentBlockStorage\Controller\FileController;
+use AVAllAC\PersistentBlockStorage\Controller\ReportController;
 use AVAllAC\PersistentBlockStorage\Controller\VolumeController;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
@@ -36,6 +37,12 @@ class CoreControllersProvider implements ServiceProviderInterface
             return new DashboardController(
                 $pimple['coreSummary'],
                 $pimple['twig']
+            );
+        };
+
+        $pimple['reportController'] = function () use ($pimple) {
+            return new ReportController(
+                $pimple['headerStorage']
             );
         };
 
