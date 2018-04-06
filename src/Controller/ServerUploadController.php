@@ -33,10 +33,10 @@ class ServerUploadController extends BaseController
     public function upload(Request $request, string $volume, string $seek, string $size) : Response
     {
         $code = rand(1000, 9999);
-        print microtime(true) . ':' . $code . " INIT\n";
         $volume = (int)$volume;
         $seek = (int)$seek;
         $size = (int)$size;
+        print microtime(true) . ':' . $code . " INIT $volume/$seek/$size \n";
         $data = $request->getBody()->getContents();
         if ($request->getMethod() !== 'PUT') {
             return $this->textResponse(405, 'Method Not Allowed');
