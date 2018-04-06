@@ -49,7 +49,7 @@ class CoreUploadController extends BaseController
             await($this->runningPromise, $this->loop);
         }
         print microtime(true) . ':' . $code . " START\n";
-        $this->runningPromise = new Promise(function ($resolve, $reject) use ($data, $code) {
+        $promise = new Promise(function ($resolve, $reject) use ($data, $code) {
             $md5 = md5($data);
             try {
                 $this->headerStorage->beginTransaction();
@@ -59,28 +59,28 @@ class CoreUploadController extends BaseController
                     $request = $this->serverAPI->upload($storagePosition, $data);
                     $request->then(function () use ($resolve, $code) {
                         $this->headerStorage->commit();
-                        $this->runningPromise = null;
                         print microtime(true) . ':' . $code . " REQUEST END\n";
                         $resolve(new Response(200, [], 'OK'));
                     }, function () use ($resolve, $code) {
                         $this->headerStorage->rollBack();
-                        $this->runningPromise = null;
                         print microtime(true) . ':' . $code . " REQUEST ERROR\n";
                         $resolve(new Response(503, [], 'Error'));
                     });
                 } else {
                     $this->headerStorage->commit();
-                    $this->runningPromise = null;
                     $resolve(new Response(200, [], 'OK'));
                 }
             } catch (\Exception $e) {
                 $this->headerStorage->rollBack();
-                $this->runningPromise = null;
                 var_dump($e->getMessage());
                 $resolve(new Response(503, [], 'Error'));
             }
         });
+        $this->runningPromise = $promise;
+        $promise->then(function () {
+            $this->runningPromise = null;
+        });
         print microtime(true) . ':' . $code . " END\n";
-        return $this->runningPromise;
+        return $promise;
     }
 }
