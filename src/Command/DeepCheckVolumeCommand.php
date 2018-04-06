@@ -91,7 +91,7 @@ class DeepCheckVolumeCommand extends Command
                 ]);
                 $output->writeln('<fg=red;options=bold,blink>Check failed</>');
                 $output->writeln('');
-                $this->markBroken($element['md5']);
+                $this->markBroken(bin2hex($element['md5']));
             }
             $counted++;
             if (($now - $lastUpdate) > 1) {
