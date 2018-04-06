@@ -39,27 +39,33 @@ class CoreUploadController extends BaseController
      */
     public function upload(Request $request) : PromiseInterface
     {
+        $code = rand(1000, 9999);
         if ($request->getMethod() !== 'PUT') {
             return $this->textResponse(405, 'Method Not Allowed');
         }
         $data = $request->getBody()->getContents();
+        print $code . " INIT\n";
         while ($this->runningPromise) {
             await($this->runningPromise, $this->loop);
         }
-        $this->runningPromise = new Promise(function ($resolve, $reject) use ($data) {
+        print $code . " START\n";
+        $this->runningPromise = new Promise(function ($resolve, $reject) use ($data, $code) {
             $md5 = md5($data);
             try {
                 $this->headerStorage->beginTransaction();
                 if (!$this->headerStorage->checkExists($md5)) {
                     $storagePosition = $this->headerStorage->insert($md5, strlen($data));
+                    print $code . " REQUEST\n";
                     $request = $this->serverAPI->upload($storagePosition, $data);
-                    $request->then(function () use ($resolve) {
+                    $request->then(function () use ($resolve, $code) {
                         $this->headerStorage->commit();
                         $this->runningPromise = null;
+                        print $code . " REQUEST END\n";
                         $resolve(new Response(200, [], 'OK'));
-                    }, function () use ($resolve) {
+                    }, function () use ($resolve, $code) {
                         $this->headerStorage->rollBack();
                         $this->runningPromise = null;
+                        print $code . " REQUEST ERROR\n";
                         $resolve(new Response(503, [], 'Error'));
                     });
                 } else {
@@ -74,6 +80,7 @@ class CoreUploadController extends BaseController
                 $resolve(new Response(503, [], 'Error'));
             }
         });
+        print $code . " END\n";
         return $this->runningPromise;
     }
 }
