@@ -43,6 +43,14 @@ class DeepCheckVolumeCommand extends Command
         return $request->getBody()->getContents();
     }
 
+    protected function markBroken($hash)
+    {
+        $client = new Client();
+        $url = $this->urlGenerator->generate('report', ['hash' => $hash]);
+        $request = $client->request('POST', $url);
+        return $request->getBody()->getContents();
+    }
+
     /**
      * @param $volume
      * @param $output
@@ -50,6 +58,7 @@ class DeepCheckVolumeCommand extends Command
      */
     protected function checkVolume($volume, $output)
     {
+        $errorNum = 0;
         $volume = (int)$volume;
         if (!$this->storageManager->volumeAvailable($volume)) {
             $output->writeln('<error>Incorrect volume id</error>');
@@ -72,7 +81,9 @@ class DeepCheckVolumeCommand extends Command
             fseek($volumeResource, $element['seek']);
             $data = fread($volumeResource, $element['size']);
             if (md5($data, true) !== $element['md5']) {
+                $errorNum++;
                 $output->writeln([
+                    '#' . $errorNum,
                     'Seek :' . $element['seek'] . ' ' . 'Size: ' . $element['size'],
                     'Expected MD5: <comment>' . bin2hex($element['md5']) . '</comment>',
                     'Result   MD5: <comment>' . md5($data) . '</comment>',
@@ -80,7 +91,7 @@ class DeepCheckVolumeCommand extends Command
                 ]);
                 $output->writeln('<fg=red;options=bold,blink>Check failed</>');
                 $output->writeln('');
-                exit;
+                $this->markBroken($element['md5']);
             }
             $counted++;
             if (($now - $lastUpdate) > 1) {

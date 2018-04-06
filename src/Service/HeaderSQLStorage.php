@@ -11,6 +11,8 @@ class HeaderSQLStorage implements HeaderStorage
     private $dbSearch;
     private $dbExport;
     private $dbInsert;
+    private $dbMarkBroken;
+    private $dbMarkOk;
 
     /**
      * HeaderSQLStorage constructor.
@@ -20,7 +22,7 @@ class HeaderSQLStorage implements HeaderStorage
     {
         $this->db = $db;
         $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $sql = 'SELECT id FROM storage WHERE md5 = :HASH';
+        $sql = 'SELECT id FROM storage WHERE md5 = :HASH AND broken = 0';
         $this->dbExists =  $this->db->prepare($sql);
         $sql = 'SELECT volume, seek, size FROM storage WHERE md5 = :HASH';
         $this->dbSearch =  $this->db->prepare($sql);
@@ -28,6 +30,10 @@ class HeaderSQLStorage implements HeaderStorage
         $this->dbExport =  $this->db->prepare($sql);
         $sql = 'INSERT INTO storage (volume,md5,seek,size) VALUES (:volume, :md5, :seek, :size)';
         $this->dbInsert =  $this->db->prepare($sql);
+        $sql = 'UPDATE storage SET broken = 1 WHERE md5 = :HASH';
+        $this->dbMarkBroken =  $this->db->prepare($sql);
+        $sql = 'UPDATE storage SET broken = 0 WHERE md5 = :HASH';
+        $this->dbMarkOk =  $this->db->prepare($sql);
     }
 
     /**
@@ -99,6 +105,16 @@ class HeaderSQLStorage implements HeaderStorage
     public function rollBack() : void
     {
         $this->db->exec('ROLLBACK');
+    }
+
+    public function markBroken(string $hash) : void
+    {
+        $this->dbMarkBroken->execute([':HASH' => $hash]);
+    }
+
+    public function markOk(string $hash) : void
+    {
+        $this->dbMarkOk->execute([':HASH' => $hash]);
     }
 
     /**

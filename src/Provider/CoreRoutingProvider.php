@@ -32,6 +32,8 @@ class CoreRoutingProvider implements ServiceProviderInterface
             $routes->add('summary', $route);
             $route = new Route('/upload', ['_controller' => [$pimple['coreUploadController'], 'upload']]);
             $routes->add('upload', $route);
+            $route = new Route('/report/{hash}', ['_controller' => [$pimple['ReportController'], 'report']]);
+            $routes->add('report', $route);
             return $routes;
         };
         

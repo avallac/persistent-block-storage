@@ -57,7 +57,8 @@ class CoreUploadController extends BaseController
                     $storagePosition = $this->headerStorage->insert($md5, strlen($data));
                     print microtime(true) . ':' . $code . " REQUEST\n";
                     $request = $this->serverAPI->upload($storagePosition, $data);
-                    $request->then(function () use ($resolve, $code) {
+                    $request->then(function () use ($resolve, $code, $md5) {
+                        $this->headerStorage->markOk($md5);
                         $this->headerStorage->commit();
                         print microtime(true) . ':' . $code . " REQUEST END\n";
                         $resolve(new Response(200, [], 'OK'));
