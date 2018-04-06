@@ -53,12 +53,19 @@ class CoreUploadController extends BaseController
             $md5 = md5($data);
             try {
                 $this->headerStorage->beginTransaction();
-                if (!$this->headerStorage->checkExists($md5)) {
-                    $storagePosition = $this->headerStorage->insert($md5, strlen($data));
+                if (!$this->headerStorage->checkValid($md5)) {
+                    $newRecord = false;
+                    $storagePosition = $this->headerStorage->search($md5);
+                    if (!$storagePosition) {
+                        $storagePosition = $this->headerStorage->insert($md5, strlen($data));
+                        $newRecord = true;
+                    }
                     print microtime(true) . ':' . $code . " REQUEST\n";
                     $request = $this->serverAPI->upload($storagePosition, $data);
-                    $request->then(function () use ($resolve, $code, $md5) {
-                        $this->headerStorage->markOk($md5);
+                    $request->then(function () use ($resolve, $code, $md5, $newRecord) {
+                        if (!$newRecord) {
+                            $this->headerStorage->markOk($md5);
+                        }
                         $this->headerStorage->commit();
                         print microtime(true) . ':' . $code . " REQUEST END\n";
                         $resolve(new Response(200, [], 'OK'));

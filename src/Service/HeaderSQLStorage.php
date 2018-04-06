@@ -8,6 +8,7 @@ class HeaderSQLStorage implements HeaderStorage
 {
     private $db;
     private $dbExists;
+    private $dbValid;
     private $dbSearch;
     private $dbExport;
     private $dbInsert;
@@ -22,8 +23,10 @@ class HeaderSQLStorage implements HeaderStorage
     {
         $this->db = $db;
         $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $sql = 'SELECT id FROM storage WHERE md5 = :HASH AND broken = 0';
+        $sql = 'SELECT id FROM storage WHERE md5 = :HASH';
         $this->dbExists =  $this->db->prepare($sql);
+        $sql = 'SELECT id FROM storage WHERE md5 = :HASH AND broken = 0';
+        $this->dbValid =  $this->db->prepare($sql);
         $sql = 'SELECT volume, seek, size FROM storage WHERE md5 = :HASH';
         $this->dbSearch =  $this->db->prepare($sql);
         $sql = 'SELECT md5, seek, size FROM storage WHERE volume = :VOLUME ORDER BY seek';
@@ -90,6 +93,16 @@ class HeaderSQLStorage implements HeaderStorage
     {
         $this->dbExists->execute([':HASH' => $hash]);
         return $this->dbExists->fetchColumn() ? true : false;
+    }
+
+    /**
+     * @param string $hash
+     * @return bool
+     */
+    public function checkValid(string $hash) : bool
+    {
+        $this->dbValid->execute([':HASH' => $hash]);
+        return $this->dbValid->fetchColumn() ? true : false;
     }
 
     public function beginTransaction() : void
