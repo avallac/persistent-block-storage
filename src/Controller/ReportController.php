@@ -21,6 +21,6 @@ class ReportController extends BaseController
             return $this->textResponse(405, 'Method Not Allowed');
         }
         $this->headerStorage->markBroken($hash);
-        $this->textResponse(200, 'OK');
+        return $this->textResponse(200, 'OK');
     }
 }
