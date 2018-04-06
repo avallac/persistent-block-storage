@@ -44,28 +44,28 @@ class CoreUploadController extends BaseController
             return $this->textResponse(405, 'Method Not Allowed');
         }
         $data = $request->getBody()->getContents();
-        print $code . " INIT\n";
+        print microtime(true) . ':' . $code . " INIT\n";
         while ($this->runningPromise) {
             await($this->runningPromise, $this->loop);
         }
-        print $code . " START\n";
+        print microtime(true) . ':' . $code . " START\n";
         $this->runningPromise = new Promise(function ($resolve, $reject) use ($data, $code) {
             $md5 = md5($data);
             try {
                 $this->headerStorage->beginTransaction();
                 if (!$this->headerStorage->checkExists($md5)) {
                     $storagePosition = $this->headerStorage->insert($md5, strlen($data));
-                    print $code . " REQUEST\n";
+                    print microtime(true) . ':' . $code . " REQUEST\n";
                     $request = $this->serverAPI->upload($storagePosition, $data);
                     $request->then(function () use ($resolve, $code) {
                         $this->headerStorage->commit();
                         $this->runningPromise = null;
-                        print $code . " REQUEST END\n";
+                        print microtime(true) . ':' . $code . " REQUEST END\n";
                         $resolve(new Response(200, [], 'OK'));
                     }, function () use ($resolve, $code) {
                         $this->headerStorage->rollBack();
                         $this->runningPromise = null;
-                        print $code . " REQUEST ERROR\n";
+                        print microtime(true) . ':' . $code . " REQUEST ERROR\n";
                         $resolve(new Response(503, [], 'Error'));
                     });
                 } else {
@@ -80,7 +80,7 @@ class CoreUploadController extends BaseController
                 $resolve(new Response(503, [], 'Error'));
             }
         });
-        print $code . " END\n";
+        print microtime(true) . ':' . $code . " END\n";
         return $this->runningPromise;
     }
 }

@@ -32,6 +32,8 @@ class ServerUploadController extends BaseController
      */
     public function upload(Request $request, string $volume, string $seek, string $size) : Response
     {
+        $code = rand(1000, 9999);
+        print microtime(true) . ':' . $code . " INIT\n";
         $volume = (int)$volume;
         $seek = (int)$seek;
         $size = (int)$size;
@@ -43,8 +45,11 @@ class ServerUploadController extends BaseController
             return $this->textResponse(400, 'Bad Request');
         }
         if ($size === strlen($data)) {
+            print microtime(true) . ':' . $code . " POS\n";
             $position = new StoragePosition($volume, $seek, strlen($data));
+            print microtime(true) . ':' . $code . " WRITE\n";
             $this->storageManager->write($position, $data);
+            print microtime(true) . ':' . $code . " RESPONSE\n";
             return $this->textResponse(200, 'OK');
         }
         return $this->textResponse(400, 'Bad Request');
