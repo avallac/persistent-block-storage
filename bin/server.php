@@ -29,11 +29,12 @@ $pimple['loop']->addPeriodicTimer(1, function () {
 });
 
 $socket = new React\Socket\Server($pimple['config']['server']['bind'], $pimple['loop']);
-$server->listen($socket);
 print 'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress()) . PHP_EOL;
 $processManager->fork(8);
 if ($processManager->isMaster()) {
     $socketAdmin = new React\Socket\Server($pimple['config']['server']['bindAdmin'], $pimple['loop']);
     $adminServer->listen($socketAdmin);
+} else {
+    $server->listen($socket);
 }
 $pimple['loop']->run();
