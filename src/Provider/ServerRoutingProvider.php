@@ -21,7 +21,7 @@ class ServerRoutingProvider implements ServiceProviderInterface
             $routes = new RouteCollection();
             $route = new Route('/status', ['_controller' => [$pimple['statusController'], 'status']]);
             $routes->add('status', $route);
-            $pattern = '/upload/{volume}/{seek}/{size}';
+            $pattern = '/upload/{md5}/{volume}/{seek}/{size}';
             $route = new Route($pattern, ['_controller' => [$pimple['serverUploadController'], 'upload']]);
             $routes->add('upload', $route);
             return $routes;

@@ -38,9 +38,10 @@ class ClientForServerAPI
         $request = new RequestContext($adminUrl);
         $this->urlGenerator->setContext($request);
         $url = $this->urlGenerator->generate('upload', [
-           'volume' => $position->getVolume(),
-           'seek' => $position->getSeek(),
-           'size' => $position->getSize()
+            'md5' => md5($data),
+            'volume' => $position->getVolume(),
+            'seek' => $position->getSeek(),
+            'size' => $position->getSize()
         ]);
         return $this->httpClient->put($url, [], $data);
     }

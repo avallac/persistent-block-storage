@@ -22,6 +22,7 @@ class ServerUploadController extends BaseController
 
     /**
      * @param Request $request
+     * @param string $md5
      * @param string $volume
      * @param string $seek
      * @param string $size
@@ -30,7 +31,7 @@ class ServerUploadController extends BaseController
      * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\VolumeWriteException
      */
-    public function upload(Request $request, string $volume, string $seek, string $size) : Response
+    public function upload(Request $request, string $md5, string $volume, string $seek, string $size) : Response
     {
         $code = rand(1000, 9999);
         $volume = (int)$volume;
@@ -42,9 +43,9 @@ class ServerUploadController extends BaseController
             return $this->textResponse(405, 'Method Not Allowed');
         }
         if (!$this->storageManager->volumeAvailable($volume)) {
-            return $this->textResponse(400, 'Bad Request');
+            return $this->textResponse(400, 'volume unavailable');
         }
-        if ($size === strlen($data)) {
+        if (($size === strlen($data)) && ($md5 === md5($data))) {
             print microtime(true) . ':' . $code . " POS\n";
             $position = new StoragePosition($volume, $seek, strlen($data));
             print microtime(true) . ':' . $code . " WRITE\n";
@@ -52,6 +53,6 @@ class ServerUploadController extends BaseController
             print microtime(true) . ':' . $code . " RESPONSE\n";
             return $this->textResponse(200, 'OK');
         }
-        return $this->textResponse(400, 'Bad Request');
+        return $this->textResponse(400, 'Data corruption');
     }
 }
