@@ -134,7 +134,7 @@ class ServerStorageManager
         if ($this->correctPosition($position)) {
             fseek($this->getVolumeResource($position->getVolume()), $position->getSeek());
             $result = fwrite($this->getVolumeResource($position->getVolume()), $data);
-            if ($result === false) {
+            if ($result !== $position->getSize()) {
                 throw new VolumeWriteException();
             }
             return $result;
