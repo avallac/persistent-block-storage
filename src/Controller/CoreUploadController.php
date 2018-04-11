@@ -6,6 +6,7 @@ use AVAllAC\PersistentBlockStorage\Exception\ServerAPIException;
 use AVAllAC\PersistentBlockStorage\Service\ClientForServerAPI;
 use AVAllAC\PersistentBlockStorage\Service\HeaderStorage;
 use function Clue\React\Block\await;
+use Clue\React\Buzz\Message\ResponseException;
 use React\Http\Response;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
@@ -69,10 +70,10 @@ class CoreUploadController extends BaseController
                         $this->headerStorage->commit();
                         print microtime(true) . ':' . $code . " REQUEST END\n";
                         $resolve(new Response(200, [], 'OK'));
-                    }, function () use ($resolve, $code) {
+                    }, function (ResponseException $response) use ($resolve, $code) {
                         $this->headerStorage->rollBack();
                         print microtime(true) . ':' . $code . " REQUEST ERROR\n";
-                        $resolve(new Response(503, [], 'Error'));
+                        $resolve(new Response(503, [], $response->getMessage()));
                     });
                 } else {
                     $this->headerStorage->commit();
