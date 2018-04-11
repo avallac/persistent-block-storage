@@ -16,7 +16,6 @@ class ServerStorageManager
 
     /**
      * @param array
-     * @throws CantOpenFileException
      * @throws ResourceNotFoundException
      */
     public function __construct(array $volumes)
@@ -26,13 +25,9 @@ class ServerStorageManager
             if (!file_exists($volume['path'])) {
                 throw new ResourceNotFoundException();
             }
-            $fRes = fopen($volume['path'], 'c+b');
-            if (!$fRes) {
-                throw new CantOpenFileException();
-            }
             $this->volumes[$id] = [
                 'size' => $volume['size'],
-                'resource' => $fRes,
+                'resource' => null,
                 'path' => $volume['path'],
                 'hash' => $volume['hash']
             ];
@@ -43,13 +38,23 @@ class ServerStorageManager
      * @param int $id
      * @return mixed
      * @throws IncorrectVolumeException
+     * @throws CantOpenFileException
      */
-    public function getVolumeResource(int $id)
+    public function getVolumeResource(int $id) : resource
     {
         if (!$this->volumeAvailable($id)) {
             throw new IncorrectVolumeException();
         }
-        return $this->volumes[$id]['resource'];
+        if ($this->volumes[$id]['resource']) {
+            return $this->volumes[$id]['resource'];
+        } else {
+            $fRes = fopen($this->volumes[$id]['path'], 'c+b');
+            if (!$fRes) {
+                throw new CantOpenFileException();
+            }
+            $this->volumes[$id]['resource'] = $fRes;
+            return $fRes;
+        }
     }
 
     /**
@@ -106,6 +111,7 @@ class ServerStorageManager
      * @throws IncorrectVolumeException
      * @throws IncorrectVolumePositionException
      * @throws VolumeReadException
+     * @throws CantOpenFileException
      */
     public function read(StoragePosition $position) : string
     {
@@ -128,6 +134,7 @@ class ServerStorageManager
      * @throws IncorrectVolumeException
      * @throws IncorrectVolumePositionException
      * @throws VolumeWriteException
+     * @throws CantOpenFileException
      */
     public function write(StoragePosition $position, string $data) : int
     {
