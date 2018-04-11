@@ -40,7 +40,7 @@ class ServerStorageManager
      * @throws IncorrectVolumeException
      * @throws CantOpenFileException
      */
-    public function getVolumeResource(int $id) : resource
+    public function getVolumeResource(int $id)
     {
         if (!$this->volumeAvailable($id)) {
             throw new IncorrectVolumeException();
