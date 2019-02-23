@@ -6,15 +6,15 @@ use AVAllAC\PersistentBlockStorage\Service\CoreVolumesSummary;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
-class CoreSummaryProvider implements ServiceProviderInterface
+class CoreVolumesSummaryProvider implements ServiceProviderInterface
 {
     /**
      * @param Container $pimple
      */
     public function register(Container $pimple) : void
     {
-        $pimple['coreSummary'] = function () use ($pimple) {
-            return new CoreVolumesSummary($pimple['serverAPI'], $pimple['coreStorageManager'], $pimple['loop']);
+        $pimple['CoreVolumesSummary'] = function () use ($pimple) {
+            return new CoreVolumesSummary($pimple['ServerAPI'], $pimple['CoreStorageManager'], $pimple['Loop']);
         };
     }
 }

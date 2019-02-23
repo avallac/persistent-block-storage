@@ -13,12 +13,12 @@ class ServerStorageManagerProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['serverStorageManager'] = function () use ($pimple) {
+        $pimple['ServerStorageManager'] = function () use ($pimple) {
             if (isset($pimple['config']['server']['volumes'])) {
                 $volumes = $pimple['config']['server']['volumes'];
-                return new ServerStorageManager($volumes);
+                return new ServerStorageManager($volumes, $pimple['config']['blockSize']);
             } else {
-                return new ServerStorageManager([]);
+                return new ServerStorageManager([], $pimple['config']['blockSize']);
             }
         };
     }

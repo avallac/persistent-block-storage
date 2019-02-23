@@ -13,10 +13,10 @@ class KernelProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['kernel'] = function () use ($pimple) {
+        $pimple['Kernel'] = function () use ($pimple) {
             $username = $pimple['config']['auth']['username'] ?? null;
             $password = $pimple['config']['auth']['password'] ?? null;
-            return new Kernel($pimple['router'], $username, $password);
+            return new Kernel($pimple['Router'], $pimple['StatWriter'], $username, $password);
         };
     }
 }

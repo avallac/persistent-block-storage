@@ -13,20 +13,18 @@ use AVAllAC\PersistentBlockStorage\Model\StoragePosition;
 class ServerStorageManager
 {
     private $volumes;
+    private $blockSize;
 
-    /**
-     * @param array
-     * @throws ResourceNotFoundException
-     */
-    public function __construct(array $volumes)
+    public function __construct(array $volumes, int $blockSize)
     {
+        $this->blockSize = $blockSize;
+        // TODO DTO
         $this->volumes = [];
         foreach ($volumes as $id => $volume) {
             if (!file_exists($volume['path'])) {
                 throw new ResourceNotFoundException();
             }
             $this->volumes[$id] = [
-                'size' => $volume['size'],
                 'resource' => null,
                 'path' => $volume['path'],
                 'hash' => $volume['hash']
@@ -80,7 +78,7 @@ class ServerStorageManager
         if (!$this->volumeAvailable($id)) {
             throw new IncorrectVolumeException();
         }
-        return $this->volumes[$id]['size'];
+        return $this->blockSize;
     }
 
     /**
@@ -158,7 +156,6 @@ class ServerStorageManager
         $export = [];
         foreach ($this->volumes as $id => $volume) {
             $export[$id] = [
-                'size' => $volume['size'],
                 'path' => $volume['path']
             ];
         }
@@ -175,7 +172,7 @@ class ServerStorageManager
         if (!$this->volumeAvailable($pos->getVolume())) {
             return false;
         }
-        if (($pos->getSeek() + $pos->getSize()) >= $this->getVolumeSize($pos->getVolume())) {
+        if (($pos->getSeek() + $pos->getSize()) >= $this->blockSize) {
             return false;
         }
         return true;

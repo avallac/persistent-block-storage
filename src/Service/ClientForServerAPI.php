@@ -3,6 +3,9 @@
 namespace AVAllAC\PersistentBlockStorage\Service;
 
 use AVAllAC\PersistentBlockStorage\Model\StoragePosition;
+use AVAllAC\PersistentBlockStorage\Controller\ServerStatusController;
+use AVAllAC\PersistentBlockStorage\Controller\ServerUploadController;
+use AVAllAC\PersistentBlockStorage\Controller\ServerDeliveryController;
 use Clue\React\Buzz\Browser;
 use React\Promise\PromiseInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
@@ -11,19 +14,26 @@ use Symfony\Component\Routing\RequestContext;
 class ClientForServerAPI
 {
     private $httpClient;
-    private $urlGenerator;
+    private $serverAdminUrlGenerator;
+    private $serverDeliveryUrlGenerator;
     private $storageManager;
 
     /**
      * ClientForServerAPI constructor.
      * @param Browser $httpClient
-     * @param UrlGenerator $urlGenerator
+     * @param UrlGenerator $serverAdminUrlGenerator
+     * @param UrlGenerator $serverDeliveryUrlGenerator
      * @param CoreStorageManager $storageManager
      */
-    public function __construct(Browser $httpClient, UrlGenerator $urlGenerator, CoreStorageManager $storageManager)
-    {
+    public function __construct(
+        Browser $httpClient,
+        UrlGenerator $serverAdminUrlGenerator,
+        UrlGenerator $serverDeliveryUrlGenerator,
+        CoreStorageManager $storageManager
+    ) {
         $this->httpClient = $httpClient;
-        $this->urlGenerator = $urlGenerator;
+        $this->serverAdminUrlGenerator = $serverAdminUrlGenerator;
+        $this->serverDeliveryUrlGenerator = $serverDeliveryUrlGenerator;
         $this->storageManager = $storageManager;
     }
 
@@ -36,8 +46,8 @@ class ClientForServerAPI
     {
         $adminUrl = $this->storageManager->getServerAdminUrl($position->getVolume());
         $request = new RequestContext($adminUrl);
-        $this->urlGenerator->setContext($request);
-        $url = $this->urlGenerator->generate('upload', [
+        $this->serverAdminUrlGenerator->setContext($request);
+        $url = $this->serverAdminUrlGenerator->generate(ServerUploadController::UPLOAD, [
             'md5' => md5($data),
             'volume' => $position->getVolume(),
             'seek' => $position->getSeek(),
@@ -46,24 +56,31 @@ class ClientForServerAPI
         return $this->httpClient->put($url, [], $data);
     }
 
-    public function volumes()
+    public function getServersStats()
     {
         $promises = [];
         $servers = $this->storageManager->getServers();
-        foreach ($servers as $num => $server) {
-            $promises [$server['deliveryUrl']] = $this->httpClient->get($server['adminUrl'] . '/status');
+        foreach ($servers as $server) {
+            $request = new RequestContext($server->getAdminUrl());
+            $this->serverAdminUrlGenerator->setContext($request);
+            $url = $this->serverAdminUrlGenerator->generate(ServerStatusController::STATUS);
+            $promises[$server->getId()] = $this->httpClient->get($url);
         }
         return $promises;
     }
 
-    public function getFile(StoragePosition $position)
+    public function getFile(string $hash, StoragePosition $position)
     {
         $deliveryUrl = $this->storageManager->getServerDeliveryUrl($position->getVolume());
-        $params = http_build_query([
+        $request = new RequestContext($deliveryUrl);
+        $this->serverDeliveryUrlGenerator->setContext($request);
+        $url = $this->serverDeliveryUrlGenerator->generate(ServerDeliveryController::GET, [
+            'md5' => $hash,
             'volume' => $position->getVolume(),
             'seek' => $position->getSeek(),
             'size' => $position->getSize()
         ]);
-        return $this->httpClient->get($deliveryUrl . '/?' . $params);
+        var_dump($url, $deliveryUrl);
+        return $this->httpClient->get($url);
     }
 }

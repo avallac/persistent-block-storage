@@ -13,7 +13,7 @@ class ImagickProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['imagick'] = function () use ($pimple) {
+        $pimple['Imagick'] = function () use ($pimple) {
             return new Imagick();
         };
     }

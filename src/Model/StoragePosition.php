@@ -6,9 +6,11 @@ use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException;
 
 class StoragePosition
 {
-
+    /** @var int */
     private $volume;
+    /** @var int */
     private $seek;
+    /** @var int */
     private $size;
 
     /**

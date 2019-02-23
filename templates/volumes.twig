@@ -1,0 +1,25 @@
+{% extends "layout.twig" %}
+
+{% block route %}volumes{% endblock %}
+{% block content %}
+    {% for volume in volumes %}
+        <div class="col" style="padding: 5px;">
+            <div class="card">
+                <div class="card-header text-center">
+                    <nobr><i class="fa fa-database"></i> Volume {{ volume.id }}</nobr><br>
+                    <nobr><i class="fa fa-angle-double-right"></i> {{ volume.routeTo }}</nobr>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        {% for target in volume.announced %}
+                        <nobr><i class="fas fa-server"></i> Server {{ target.server }}</nobr><br>
+                        <nobr><i class="far fa-hdd"></i> {{ target.dev }}</nobr></li>
+                    {% else %}
+                        <i class="text-danger fas fa-exclamation-triangle"></i>
+                    {% endfor %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

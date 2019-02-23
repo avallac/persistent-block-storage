@@ -14,34 +14,56 @@ class HeaderSQLStorage implements HeaderStorage
     private $dbInsert;
     private $dbMarkBroken;
     private $dbMarkOk;
+    private $dbStorageInfo;
+    private $blockSize;
+    private $dbStorageInit;
+    private $dbStorageUpdateCurrentVolume;
+    private $dbStorageUpdateNextVolume;
 
-    /**
-     * HeaderSQLStorage constructor.
-     * @param \PDO $db
-     */
-    public function __construct(\PDO $db)
+    public function __construct(\PDO $db, int $blockSize)
     {
         $this->db = $db;
+        $this->blockSize = $blockSize;
         $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
         $sql = 'SELECT id FROM storage WHERE md5 = :HASH';
-        $this->dbExists =  $this->db->prepare($sql);
+        $this->dbExists = $this->db->prepare($sql);
+
         $sql = 'SELECT id FROM storage WHERE md5 = :HASH AND broken = 0';
         $this->dbValid =  $this->db->prepare($sql);
+
         $sql = 'SELECT volume, seek, size FROM storage WHERE md5 = :HASH';
-        $this->dbSearch =  $this->db->prepare($sql);
+        $this->dbSearch = $this->db->prepare($sql);
+
         $sql = 'SELECT md5, seek, size FROM storage WHERE volume = :VOLUME ORDER BY seek';
-        $this->dbExport =  $this->db->prepare($sql);
+        $this->dbExport = $this->db->prepare($sql);
+
         $sql = 'INSERT INTO storage (volume,md5,seek,size) VALUES (:volume, :md5, :seek, :size)';
-        $this->dbInsert =  $this->db->prepare($sql);
+        $this->dbInsert = $this->db->prepare($sql);
+
         $sql = 'UPDATE storage SET broken = 1 WHERE md5 = :HASH';
-        $this->dbMarkBroken =  $this->db->prepare($sql);
+        $this->dbMarkBroken = $this->db->prepare($sql);
+
         $sql = 'UPDATE storage SET broken = 0 WHERE md5 = :HASH';
-        $this->dbMarkOk =  $this->db->prepare($sql);
+        $this->dbMarkOk = $this->db->prepare($sql);
+
+        $sql = 'SELECT volume, pos FROM storage_last';
+        $this->dbStorageInfo = $this->db->prepare($sql);
+
+        $sql = 'INSERT INTO storage_last (volume, pos) VALUES (0, :newPos)';
+        $this->dbStorageInit = $this->db->prepare($sql);
+
+        $sql = 'UPDATE storage_last SET pos = :newPos WHERE pos = :oldPos';
+        $this->dbStorageUpdateCurrentVolume = $this->db->prepare($sql);
+
+        $sql = 'UPDATE storage_last SET volume = volume + 1, pos = :newPos WHERE pos = :oldPos';
+        $this->dbStorageUpdateNextVolume = $this->db->prepare($sql);
     }
 
     /**
      * @param string $hash
-     * @return array|null
+     * @return StoragePosition|null
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException
      */
     public function search(string $hash) : ?StoragePosition
     {
@@ -99,7 +121,7 @@ class HeaderSQLStorage implements HeaderStorage
      * @param string $hash
      * @return bool
      */
-    public function checkValid(string $hash) : bool
+    public function checkExistsValid(string $hash) : bool
     {
         $this->dbValid->execute([':HASH' => $hash]);
         return $this->dbValid->fetchColumn() ? true : false;
@@ -137,24 +159,25 @@ class HeaderSQLStorage implements HeaderStorage
      */
     private function reservationPosition(int $size) : StoragePosition
     {
-        $stmt = $this->db->prepare("SELECT volume,pos,max_size FROM storage_last");
-        $stmt->execute();
-        $e = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if (($e['pos'] + $size) < $e['max_size']) {
-            $stmt = $this->db->prepare("UPDATE storage_last SET pos = :newPos WHERE pos = :oldPos");
-            $stmt->execute([
-                'newPos' => $e['pos'] + $size,
-                'oldPos' => $e['pos']
-            ]);
-            return new StoragePosition($e['volume'], $e['pos'], $size);
+        $this->dbStorageInfo->execute();
+        $e = $this->dbStorageInfo->fetch();
+        if ($e !== false) {
+            if (($e['pos'] + $size) < $this->blockSize) {
+                $this->dbStorageUpdateCurrentVolume->execute([
+                    'newPos' => $e['pos'] + $size,
+                    'oldPos' => $e['pos']
+                ]);
+                return new StoragePosition($e['volume'], $e['pos'], $size);
+            } else {
+                $this->dbStorageUpdateNextVolume->execute([
+                    'newPos' => $size,
+                    'oldPos' => $e['pos']
+                ]);
+                return new StoragePosition($e['volume'] + 1, 0, $size);
+            }
         } else {
-            $sql = "UPDATE storage_last SET volume = volume + 1, pos = :newPos WHERE pos = :oldPos";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([
-                'newPos' => $size,
-                'oldPos' => $e['pos']
-            ]);
-            return new StoragePosition($e['volume'] + 1, 0, $size);
+            $this->dbStorageInit->execute(['newPos' => $size]);
+            return new StoragePosition(0, 0, $size);
         }
     }
 }

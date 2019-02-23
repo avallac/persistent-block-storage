@@ -9,6 +9,8 @@ use RingCentral\Psr7\Request;
 
 class ServerUploadController extends BaseController
 {
+    public const UPLOAD = 'upload';
+
     private $storageManager;
 
     /**
@@ -27,17 +29,16 @@ class ServerUploadController extends BaseController
      * @param string $seek
      * @param string $size
      * @return Response
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\VolumeWriteException
      */
     public function upload(Request $request, string $md5, string $volume, string $seek, string $size) : Response
     {
-        $code = rand(1000, 9999);
         $volume = (int)$volume;
         $seek = (int)$seek;
         $size = (int)$size;
-        print microtime(true) . ':' . $code . " INIT $volume/$seek/$size \n";
         $data = $request->getBody()->getContents();
         if ($request->getMethod() !== 'PUT') {
             return $this->textResponse(405, 'Method Not Allowed');
@@ -46,11 +47,8 @@ class ServerUploadController extends BaseController
             return $this->textResponse(400, 'volume unavailable');
         }
         if (($size === strlen($data)) && ($md5 === md5($data))) {
-            print microtime(true) . ':' . $code . " POS\n";
             $position = new StoragePosition($volume, $seek, strlen($data));
-            print microtime(true) . ':' . $code . " WRITE\n";
             $this->storageManager->write($position, $data);
-            print microtime(true) . ':' . $code . " RESPONSE\n";
             return $this->textResponse(200, 'OK');
         }
         return $this->textResponse(400, 'Data corruption');

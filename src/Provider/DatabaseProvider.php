@@ -12,10 +12,10 @@ class DatabaseProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['db'] = function () use ($pimple) {
-            $pdo = $pimple['config']['database']['dsn'] ?? null;
-            $username = $pimple['config']['database']['username'] ?? null;
-            $password = $pimple['config']['database']['password'] ?? null;
+        $pimple['Db'] = function () use ($pimple) {
+            $pdo = $pimple['config']['core']['database']['dsn'] ?? null;
+            $username = $pimple['config']['core']['database']['username'] ?? null;
+            $password = $pimple['config']['core']['database']['password'] ?? null;
             return new \PDO($pdo, $username, $password);
         };
     }

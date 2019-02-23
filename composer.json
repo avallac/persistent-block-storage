@@ -6,9 +6,8 @@
         }
     },
     "require": {
-        "react/event-loop": "^0.4.3",
-        "react/http": "^0.8.1",
-        "react/http-client": "^0.5.8",
+        "react/http": "^0.8.3",
+        "react/http-client": "^0.5.9",
         "pimple/pimple": "^3.2",
         "symfony/yaml": "^4.0",
         "symfony/routing": "^4.0",
@@ -17,6 +16,18 @@
         "twig/twig": "^2.4",
         "clue/buzz-react": "^2.3",
         "clue/block-react": "^1.2",
-        "guzzlehttp/guzzle": "^6.3"
+        "guzzlehttp/guzzle": "^6.3",
+        "php": "^7.2",
+        "phpunit/phpunit": "^8.0",
+        "ext-json": "*",
+        "ext-pdo": "*",
+        "ext-imagick": "*",
+        "ext-pcntl": "*",
+        "ext-posix": "*"
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "php -r \"copy('etc/config.yml.orig', 'etc/config.yml');\""
+        ]
     }
 }

@@ -4,8 +4,9 @@ namespace AVAllAC\PersistentBlockStorage\Controller;
 
 use AVAllAC\PersistentBlockStorage\Service\HeaderStorage;
 use RingCentral\Psr7\Request;
+use React\Http\Response;
 
-class ReportController extends BaseController
+class CoreReportController extends BaseController
 {
     private $headerStorage;
 
@@ -15,7 +16,12 @@ class ReportController extends BaseController
         $this->headerStorage = $headerStorage;
     }
 
-    public function report(Request $request, string $hash)
+    /**
+     * @param Request $request
+     * @param string $hash
+     * @return Response
+     */
+    public function report(Request $request, string $hash) : Response
     {
         if ($request->getMethod() !== 'POST') {
             return $this->textResponse(405, 'Method Not Allowed');

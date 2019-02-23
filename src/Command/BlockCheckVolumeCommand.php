@@ -42,7 +42,7 @@ class BlockCheckVolumeCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output) : void
     {
         $M = 1024 * 1024;
-        $volume = $input->getArgument('volume');
+        $volume = (int)$input->getArgument('volume');
         if (!$this->storageManager->volumeAvailable($volume)) {
             $output->writeln('<error>Incorrect volume id</error>');
             exit;

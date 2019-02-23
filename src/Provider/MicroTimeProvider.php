@@ -13,6 +13,6 @@ class MicroTimeProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['microTime'] = new MicroTime();
+        $pimple['MicroTime'] = new MicroTime();
     }
 }

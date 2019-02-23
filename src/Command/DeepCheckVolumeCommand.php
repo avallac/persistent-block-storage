@@ -55,6 +55,7 @@ class DeepCheckVolumeCommand extends Command
      * @param $volume
      * @param $output
      * @throws IncorrectVolumeException
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
      */
     protected function checkVolume($volume, $output)
     {
@@ -105,8 +106,11 @@ class DeepCheckVolumeCommand extends Command
     }
 
     /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|void|null
      * @throws IncorrectVolumeException
-     * @throws \Exception
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

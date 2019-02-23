@@ -2,9 +2,14 @@
 
 namespace AVAllAC\PersistentBlockStorage\Service;
 
+use \AVAllAC\PersistentBlockStorage\Model\VolumeInfo;
+use \AVAllAC\PersistentBlockStorage\Model\ServerInfo;
+
 class CoreStorageManager
 {
+    /** @var VolumeInfo[] */
     private $volumes;
+    /** @var ServerInfo[] */
     private $servers;
 
     /**
@@ -13,20 +18,21 @@ class CoreStorageManager
      */
     public function __construct(array $servers)
     {
-        $this->servers = $servers;
+        $this->servers = [];
         $this->volumes = [];
-        foreach ($servers as $sid => $server) {
-            $volumes = preg_replace_callback('/(\d+)-(\d+)/', function ($m) {
-                return implode(',', range($m[1], $m[2]));
-            }, $server['volumes']);
+        foreach ($servers as $serverId => $serverData) {
+            $server = new ServerInfo($serverId, $serverData['deliveryUrl'], $serverData['adminUrl']);
+            $this->servers[] = $server;
+            $volumes = preg_replace_callback(
+                '/(\d+)-(\d+)/',
+                function ($m) {
+                    return implode(',', range($m[1], $m[2]));
+                },
+                $serverData['volumes']
+            );
+
             foreach (explode(',', $volumes) as $item) {
-                $this->volumes[$item] = [
-                    'server' => [
-                        'id' => $sid,
-                        'deliveryUrl' => $server['deliveryUrl'],
-                        'adminUrl' => $server['adminUrl']
-                    ]
-                ];
+                $this->volumes[$item] = new VolumeInfo((int)$item, $server);
             }
         }
     }
@@ -37,7 +43,7 @@ class CoreStorageManager
      */
     public function getServerAdminUrl(int $volume) : string
     {
-        return $this->volumes[$volume]['server']['adminUrl'];
+        return $this->volumes[$volume]->getServer()->getAdminUrl();
     }
 
     /**
@@ -46,11 +52,11 @@ class CoreStorageManager
      */
     public function getServerDeliveryUrl(int $volume) : string
     {
-        return $this->volumes[$volume]['server']['deliveryUrl'];
+        return $this->volumes[$volume]->getServer()->getDeliveryUrl();
     }
 
     /**
-     * @return array
+     * @return ServerInfo[]
      */
     public function getServers() : array
     {
@@ -58,7 +64,7 @@ class CoreStorageManager
     }
 
     /**
-     * @return array
+     * @return VolumeInfo[]
      */
     public function getVolumes() : array
     {

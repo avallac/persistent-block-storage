@@ -6,7 +6,7 @@ use AVAllAC\PersistentBlockStorage\Model\StoragePosition;
 use Psr\Http\Message\ServerRequestInterface;
 use React\Http\Response;
 
-class DeliveryKernel
+class ServerDeliveryKernel
 {
     private $storageManager;
 
@@ -22,6 +22,7 @@ class DeliveryKernel
     /**
      * @param ServerRequestInterface $request
      * @return Response
+     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException
      * @throws \AVAllAC\PersistentBlockStorage\Exception\VolumeReadException

@@ -15,9 +15,14 @@ class ClientForServerAPIProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['serverAPI'] = function () use ($pimple) {
-            $httpClient = new Browser($pimple['loop']);
-            return new ClientForServerAPI($httpClient, $pimple['serverUrlGenerator'], $pimple['coreStorageManager']);
+        $pimple['ServerAPI'] = function () use ($pimple) {
+            $httpClient = new Browser($pimple['Loop']);
+            return new ClientForServerAPI(
+                $httpClient,
+                $pimple['ServerAdminUrlGenerator'],
+                $pimple['ServerDeliveryUrlGenerator'],
+                $pimple['CoreStorageManager']
+            );
         };
     }
 }

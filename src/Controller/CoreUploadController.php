@@ -2,21 +2,17 @@
 
 namespace AVAllAC\PersistentBlockStorage\Controller;
 
-use AVAllAC\PersistentBlockStorage\Exception\ServerAPIException;
 use AVAllAC\PersistentBlockStorage\Service\ClientForServerAPI;
 use AVAllAC\PersistentBlockStorage\Service\HeaderStorage;
 use function Clue\React\Block\await;
-use Clue\React\Buzz\Message\ResponseException;
 use React\Http\Response;
-use React\Promise\Promise;
-use React\Promise\PromiseInterface;
 use RingCentral\Psr7\Request;
+use React\EventLoop\LoopInterface;
 
 class CoreUploadController extends BaseController
 {
     private $serverAPI;
     private $headerStorage;
-    private $runningPromise;
     private $loop;
 
     /**
@@ -25,71 +21,52 @@ class CoreUploadController extends BaseController
      * @param HeaderStorage $headerStorage
      * @param $loop
      */
-    public function __construct(ClientForServerAPI $serverAPI, HeaderStorage $headerStorage, $loop)
+    public function __construct(ClientForServerAPI $serverAPI, HeaderStorage $headerStorage, LoopInterface $loop)
     {
         $this->serverAPI = $serverAPI;
         $this->headerStorage = $headerStorage;
         $this->loop = $loop;
-        $this->runningPromise = null;
     }
 
     /**
      * @param Request $request
-     * @return PromiseInterface
+     * @return Response
      * @throws \Exception
      */
-    public function upload(Request $request) : PromiseInterface
+    public function upload(Request $request) : Response
     {
-        $code = rand(1000, 9999);
         if ($request->getMethod() !== 'PUT') {
             return $this->textResponse(405, 'Method Not Allowed');
         }
         $data = $request->getBody()->getContents();
-        print microtime(true) . ':' . $code . " INIT\n";
-        while ($this->runningPromise) {
-            await($this->runningPromise, $this->loop);
-        }
-        print microtime(true) . ':' . $code . " START\n";
-        $promise = new Promise(function ($resolve, $reject) use ($data, $code) {
-            $md5 = md5($data);
-            try {
-                $this->headerStorage->beginTransaction();
-                if (!$this->headerStorage->checkValid($md5)) {
-                    $newRecord = false;
-                    $storagePosition = $this->headerStorage->search($md5);
-                    if (!$storagePosition) {
-                        $storagePosition = $this->headerStorage->insert($md5, strlen($data));
-                        $newRecord = true;
-                    }
-                    print microtime(true) . ':' . $code . " REQUEST\n";
-                    $request = $this->serverAPI->upload($storagePosition, $data);
-                    $request->then(function () use ($resolve, $code, $md5, $newRecord) {
-                        if (!$newRecord) {
-                            $this->headerStorage->markOk($md5);
-                        }
-                        $this->headerStorage->commit();
-                        print microtime(true) . ':' . $code . " REQUEST END\n";
-                        $resolve(new Response(200, [], 'OK'));
-                    }, function (ResponseException $response) use ($resolve, $code) {
-                        $this->headerStorage->rollBack();
-                        print microtime(true) . ':' . $code . " REQUEST ERROR\n";
-                        $resolve(new Response(503, [], $response->getMessage()));
-                    });
-                } else {
-                    $this->headerStorage->commit();
-                    $resolve(new Response(200, [], 'OK'));
+        $md5 = md5($data);
+        try {
+            $this->headerStorage->beginTransaction();
+            if (!$this->headerStorage->checkExistsValid($md5)) {
+                $newRecord = false;
+                $storagePosition = $this->headerStorage->search($md5);
+                if (!$storagePosition) {
+                    $storagePosition = $this->headerStorage->insert($md5, strlen($data));
+                    $newRecord = true;
                 }
-            } catch (\Exception $e) {
-                $this->headerStorage->rollBack();
-                var_dump($e->getMessage());
-                $resolve(new Response(503, [], 'Error'));
+                $promise = $this->serverAPI->upload($storagePosition, $data);
+                $response = await($promise, $this->loop);
+                if ($response->getStatusCode() === 200) {
+                    if (!$newRecord) {
+                        $this->headerStorage->markOk($md5);
+                    }
+                    $this->headerStorage->commit();
+                    return $this->textResponse(200, 'OK');
+                } else {
+                    return $this->textResponse(503, 'Error');
+                }
+            } else {
+                $this->headerStorage->commit();
+                return $this->textResponse(200, 'OK');
             }
-        });
-        $this->runningPromise = $promise;
-        $promise->then(function () {
-            $this->runningPromise = null;
-        });
-        print microtime(true) . ':' . $code . " END\n";
-        return $promise;
+        } catch (\Exception $e) {
+            $this->headerStorage->rollBack();
+            return $this->textResponse(503, 'Error');
+        }
     }
 }

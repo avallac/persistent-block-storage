@@ -2,11 +2,11 @@
 
 namespace AVAllAC\PersistentBlockStorage\Provider;
 
-use AVAllAC\PersistentBlockStorage\Controller\DashboardController;
+use AVAllAC\PersistentBlockStorage\Controller\CoreDashboardController;
 use AVAllAC\PersistentBlockStorage\Controller\CoreUploadController;
-use AVAllAC\PersistentBlockStorage\Controller\FileController;
-use AVAllAC\PersistentBlockStorage\Controller\ReportController;
-use AVAllAC\PersistentBlockStorage\Controller\VolumeController;
+use AVAllAC\PersistentBlockStorage\Controller\CoreDeliveryController;
+use AVAllAC\PersistentBlockStorage\Controller\CoreReportController;
+use AVAllAC\PersistentBlockStorage\Controller\CoreVolumeExportController;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
@@ -17,40 +17,40 @@ class CoreControllersProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['fileController'] = function () use ($pimple) {
-            return new FileController(
-                $pimple['serverAPI'],
-                $pimple['headerStorage'],
-                $pimple['loop'],
-                $pimple['coreStorageManager'],
-                $pimple['imagick']
+        $pimple['CoreDeliveryController'] = function () use ($pimple) {
+            return new CoreDeliveryController(
+                $pimple['ServerAPI'],
+                $pimple['HeaderStorage'],
+                $pimple['Loop'],
+                $pimple['CoreStorageManager'],
+                $pimple['Imagick']
             );
         };
 
-        $pimple['volumeController'] = function () use ($pimple) {
-            return new VolumeController(
-                $pimple['headerStorage']
+        $pimple['CoreVolumeExportController'] = function () use ($pimple) {
+            return new CoreVolumeExportController(
+                $pimple['HeaderStorage']
             );
         };
 
-        $pimple['dashboardController'] = function () use ($pimple) {
-            return new DashboardController(
-                $pimple['coreSummary'],
-                $pimple['twig']
+        $pimple['CoreDashboardController'] = function () use ($pimple) {
+            return new CoreDashboardController(
+                $pimple['CoreVolumesSummary'],
+                $pimple['Twig']
             );
         };
 
-        $pimple['reportController'] = function () use ($pimple) {
-            return new ReportController(
-                $pimple['headerStorage']
+        $pimple['CoreReportController'] = function () use ($pimple) {
+            return new CoreReportController(
+                $pimple['HeaderStorage']
             );
         };
 
-        $pimple['coreUploadController'] = function () use ($pimple) {
+        $pimple['CoreUploadController'] = function () use ($pimple) {
             return new CoreUploadController(
-                $pimple['serverAPI'],
-                $pimple['headerStorage'],
-                $pimple['loop']
+                $pimple['ServerAPI'],
+                $pimple['HeaderStorage'],
+                $pimple['Loop']
             );
         };
     }

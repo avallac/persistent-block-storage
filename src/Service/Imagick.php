@@ -8,6 +8,7 @@ class Imagick
      * @param string $format
      * @param string $blobImage
      * @return string
+     * @throws \ImagickException
      */
     public function thumb(string $format, string $blobImage) : string
     {

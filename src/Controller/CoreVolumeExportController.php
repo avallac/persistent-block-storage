@@ -6,7 +6,7 @@ use AVAllAC\PersistentBlockStorage\Service\HeaderStorage;
 use RingCentral\Psr7\Request;
 use React\Http\Response;
 
-class VolumeController extends BaseController
+class CoreVolumeExportController extends BaseController
 {
     private $headerStorage;
 

@@ -4,6 +4,7 @@ namespace AVAllAC\PersistentBlockStorage\Provider;
 
 use AVAllAC\PersistentBlockStorage\Exception\BadConfigException;
 use AVAllAC\PersistentBlockStorage\Service\HeaderSQLStorage;
+use AVAllAC\PersistentBlockStorage\Service\HeaderMemoryStorage;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
@@ -14,10 +15,12 @@ class HeaderStorageProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['headerStorage'] = function () use ($pimple) {
-            $storageType = $pimple['config']['manager']['headerStorage'] ?? null;
+        $pimple['HeaderStorage'] = function () use ($pimple) {
+            $storageType = $pimple['config']['core']['headerStorage'] ?? null;
             if ($storageType === 'sql') {
-                return new HeaderSQLStorage($pimple['db']);
+                return new HeaderSQLStorage($pimple['Db'], $pimple['config']['blockSize']);
+            } elseif ($storageType === 'memory') {
+                return new HeaderMemoryStorage();
             } else {
                 throw new BadConfigException();
             }

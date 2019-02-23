@@ -1,0 +1,25 @@
+coreUrl: http://127.0.0.1:8888
+blockSize: 99999999999
+auth:
+  username: null
+  password: null
+core:
+  database:
+    username: postgres
+    password:
+    dsn: pgsql:host=localhost;dbname=storage
+  bind: 0.0.0.0:8888
+  headerStorage: sql
+  servers:
+    0:
+      adminUrl: http://127.0.0.1:10700
+      deliveryUrl: http://127.0.0.1:10701
+      volumes: 0
+server:
+  bindAdmin: 0.0.0.0:10700
+  bind: 0.0.0.0:10701
+  volumes:
+    0:
+      path: /tmp/block
+      hash:
+      size: 9999999

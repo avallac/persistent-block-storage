@@ -1,0 +1,22 @@
+{% extends "layout.twig" %}
+
+{% block route %}servers{% endblock %}
+{% block content %}
+    {% for server in servers %}
+        <div class="col" style="padding: 5px;">
+            <div class="card">
+                <div class="card-header text-center">
+                    <i class="fa fa-server"></i> Server <b>{{ server.id }}</b> adminAddr {{ server.url }}<br>
+                    Uptime: {{ (server.uptime/3600)|round(2) }} hours
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        {% for code,value in server.stats %}
+                         <nobr><i class="fas fa-chevron-right"></i> Answer {{ code }}: {{ value }} action</nobr><br>
+                        {% endfor %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

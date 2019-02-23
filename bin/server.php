@@ -2,40 +2,54 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-use \React\Http\Server;
-use \AVAllAC\PersistentBlockStorage\Provider\ServerRoutingProvider;
-use \AVAllAC\PersistentBlockStorage\Provider\ServerControllersProvider;
-use \AVAllAC\PersistentBlockStorage\Provider\KernelProvider;
-use \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider;
-use \AVAllAC\PersistentBlockStorage\Provider\DeliveryKernelProvider;
-use \AVAllAC\PersistentBlockStorage\Provider\MicroTimeProvider;
-
 $processManager = new \AVAllAC\PersistentBlockStorage\ProcessManager();
 $pimple = new Pimple\Container();
 $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/config.yml');
-$pimple['loop'] = React\EventLoop\Factory::create();
-$pimple->register(new MicroTimeProvider());
-$pimple->register(new DeliveryKernelProvider());
-$pimple->register(new ServerStorageManagerProvider());
-$pimple->register(new ServerControllersProvider());
-$pimple->register(new ServerRoutingProvider());
-$pimple->register(new KernelProvider(), ['router' => $pimple['serverRouter']]);
+$pimple['Loop'] = React\EventLoop\Factory::create();
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\MicroTimeProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryKernelProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerControllersProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryRoutingProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerAdminRoutingProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\StatProvider());
 
-$server = new Server([$pimple['deliveryKernel'], 'handle']);
-$adminServer = new Server([$pimple['kernel'], 'handle']);
+$username = $pimple['config']['auth']['username'] ?? null;
+$password = $pimple['config']['auth']['password'] ?? null;
 
-$pimple['loop']->addPeriodicTimer(1, function () {
+$adminKernel = new AVAllAC\PersistentBlockStorage\Service\Kernel(
+    $pimple['ServerAdminRouter'],
+    $pimple['StatWriter'],
+    $username,
+    $password
+);
+$deliveryKernel = new AVAllAC\PersistentBlockStorage\Service\Kernel(
+    $pimple['ServerDeliveryRouter'],
+    $pimple['StatWriter'],
+    $username,
+    $password
+);
+
+$adminServer = new \React\Http\Server([$adminKernel, 'handle']);
+$deliveryServer = new \React\Http\Server([$deliveryKernel, 'handle']);
+
+$pimple['Loop']->addPeriodicTimer(1, function () {
     pcntl_signal_dispatch();
 });
 
-$socket = new React\Socket\Server($pimple['config']['server']['bind'], $pimple['loop']);
-print 'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress()) . PHP_EOL;
+$deliverySocket = new React\Socket\Server($pimple['config']['server']['bind'], $pimple['Loop']);
+print 'Listening delivery on ' . str_replace('tcp:', 'http:', $deliverySocket->getAddress()) . PHP_EOL;
+
+$adminSocket = new React\Socket\Server($pimple['config']['server']['bindAdmin'], $pimple['Loop']);
+print 'Listening admin on ' . str_replace('tcp:', 'http:', $adminSocket->getAddress()) . PHP_EOL;
+
 $processManager->fork(8);
 if ($processManager->isMaster()) {
-    $socketAdmin = new React\Socket\Server($pimple['config']['server']['bindAdmin'], $pimple['loop']);
-    $adminServer->listen($socketAdmin);
-    $socket->close();
+    $adminServer->listen($adminSocket);
+    $deliverySocket->close();
 } else {
-    $server->listen($socket);
+    $deliveryServer->listen($deliverySocket);
+    $adminSocket->close();
+    $pimple['StatReader']->stop();
 }
-$pimple['loop']->run();
+$pimple['Loop']->run();
