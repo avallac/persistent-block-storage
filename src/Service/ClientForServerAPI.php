@@ -80,7 +80,6 @@ class ClientForServerAPI
             'seek' => $position->getSeek(),
             'size' => $position->getSize()
         ]);
-        var_dump($url, $deliveryUrl);
         return $this->httpClient->get($url);
     }
 }
