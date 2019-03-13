@@ -56,7 +56,7 @@ class ClientForServerAPI
         return $this->httpClient->put($url, [], $data);
     }
 
-    public function getServersStats()
+    public function getServersStats(): array
     {
         $promises = [];
         $servers = $this->storageManager->getServers();
@@ -69,7 +69,7 @@ class ClientForServerAPI
         return $promises;
     }
 
-    public function getFile(string $hash, StoragePosition $position)
+    public function getFile(string $hash, StoragePosition $position): PromiseInterface
     {
         $deliveryUrl = $this->storageManager->getServerDeliveryUrl($position->getVolume());
         $request = new RequestContext($deliveryUrl);

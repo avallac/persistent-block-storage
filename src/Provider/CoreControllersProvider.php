@@ -23,7 +23,7 @@ class CoreControllersProvider implements ServiceProviderInterface
                 $pimple['HeaderStorage'],
                 $pimple['Loop'],
                 $pimple['CoreStorageManager'],
-                $pimple['Imagick']
+                $pimple['AverageTimeCollector']
             );
         };
 
@@ -36,7 +36,8 @@ class CoreControllersProvider implements ServiceProviderInterface
         $pimple['CoreDashboardController'] = function () use ($pimple) {
             return new CoreDashboardController(
                 $pimple['CoreVolumesSummary'],
-                $pimple['Twig']
+                $pimple['AverageTimeCollector'],
+                $pimple['Twig'],
             );
         };
 

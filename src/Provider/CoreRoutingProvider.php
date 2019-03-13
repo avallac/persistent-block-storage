@@ -44,19 +44,6 @@ class CoreRoutingProvider implements ServiceProviderInterface
             );
             $routes->add('storage', $route);
 
-            # resized
-            $route = new Route(
-                '/storage/resize/{format}/{file}.{type}',
-                [
-                    '_controller' =>
-                        [
-                            $this->getController($pimple, 'CoreDeliveryController'),
-                            'getResized'
-                        ]
-                ]
-            );
-            $routes->add('resized', $route);
-
             # volumeHeaders
             $route = new Route(
                 '/volume/export/{volume}',

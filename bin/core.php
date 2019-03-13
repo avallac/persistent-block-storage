@@ -12,6 +12,7 @@ $pimple = new Pimple\Container();
 $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/config.yml');
 $pimple['Loop'] = React\EventLoop\Factory::create();
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\MicroTimeProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\AverageTimeProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\TwigProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\DatabaseProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ImagickProvider());

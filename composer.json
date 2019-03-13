@@ -21,7 +21,6 @@
         "phpunit/phpunit": "^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
-        "ext-imagick": "*",
         "ext-pcntl": "*",
         "ext-posix": "*"
     },

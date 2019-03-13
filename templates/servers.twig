@@ -2,6 +2,7 @@
 
 {% block route %}servers{% endblock %}
 {% block content %}
+    <H1>{{ average }}</H1>
     {% for server in servers %}
         <div class="col" style="padding: 5px;">
             <div class="card">
