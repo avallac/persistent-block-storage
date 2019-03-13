@@ -2,19 +2,36 @@
 
 namespace AVAllAC\PersistentBlockStorage\Model;
 
+use AVAllAC\PersistentBlockStorage\Service\CoreStorageManager;
+
 class AverageTimeCollector
 {
-    protected $sum = 0;
-    protected $count = 0;
+    private $data = [];
+    private $storageManager;
 
-    public function addValue($time)
+    public function __construct(CoreStorageManager $storageManager)
     {
-        $this->sum += $time;
-        $this->count++;
+        $this->storageManager = $storageManager;
     }
 
-    public function getAverageValue()
+    public function addValue(StoragePosition $storagePosition, $time)
     {
-        return $this->sum/$this->count;
+        $serverId = $this->storageManager->getServerId($storagePosition->getVolume());
+        if (!isset($this->data[$serverId])) {
+            $this->data[$serverId] = [
+                'sum' => 0,
+                'count' => 0
+            ];
+        }
+        $this->data[$serverId]['sum'] += $time;
+        $this->data[$serverId]['count']++;
+    }
+
+    public function getAverageValue($serverId)
+    {
+        if (!isset($this->data[$serverId])) {
+            return -1;
+        }
+        return $this->data[$serverId]['sum']/$this->data[$serverId]['count'];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace AVAllAC\PersistentBlockStorage\Service;
 
+use AVAllAC\PersistentBlockStorage\Model\AverageTimeCollector;
 use function Clue\React\Block\awaitAll;
 use React\EventLoop\LoopInterface;
 use RingCentral\Psr7\Response;
@@ -11,18 +12,18 @@ class CoreVolumesSummary
     private $serverAPI;
     private $storageManager;
     private $loop;
+    private $averageTimeCollector;
 
-    /**
-     * CoreVolumesSummary constructor.
-     * @param ClientForServerAPI $serverAPI
-     * @param CoreStorageManager $storageManager
-     * @param LoopInterface $loop
-     */
-    public function __construct(ClientForServerAPI $serverAPI, CoreStorageManager $storageManager, LoopInterface $loop)
-    {
+    public function __construct(
+        ClientForServerAPI $serverAPI,
+        CoreStorageManager $storageManager,
+        LoopInterface $loop,
+        AverageTimeCollector $averageTimeCollector
+    ) {
         $this->serverAPI = $serverAPI;
         $this->storageManager = $storageManager;
         $this->loop = $loop;
+        $this->averageTimeCollector = $averageTimeCollector;
     }
 
     /**
@@ -74,6 +75,7 @@ class CoreVolumesSummary
             $serverInfo = json_decode($answer->getBody()->getContents(), true);
             $servers[$id]['stats'] = $serverInfo['stats'];
             $servers[$id]['uptime'] = $serverInfo['uptime'];
+            $servers[$id]['time'] = $this->averageTimeCollector->getAverageValue($id);
         }
         return $servers;
     }

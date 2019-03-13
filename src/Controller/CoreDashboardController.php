@@ -13,18 +13,10 @@ class CoreDashboardController extends BaseController
 
     private $twig;
     private $coreSummary;
-    private $averageTimeCollector;
 
-    /**
-     * CoreStatusController constructor.
-     * @param CoreVolumesSummary $coreSummary
-     * @param AverageTimeCollector $averageTimeCollector
-     * @param \Twig_Environment $twig
-     */
-    public function __construct(CoreVolumesSummary $coreSummary, AverageTimeCollector $averageTimeCollector, \Twig_Environment $twig)
+    public function __construct(CoreVolumesSummary $coreSummary, \Twig_Environment $twig)
     {
         $this->coreSummary = $coreSummary;
-        $this->averageTimeCollector = $averageTimeCollector;
         $this->twig = $twig;
     }
 
@@ -47,7 +39,6 @@ class CoreDashboardController extends BaseController
     {
         return $this->htmlResponse(200, $this->twig->render('servers.twig', [
             'servers' => $this->coreSummary->servers(),
-            'average' => $this->averageTimeCollector->getAverageValue()
         ]));
     }
 }

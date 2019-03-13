@@ -48,6 +48,15 @@ class CoreStorageManager
 
     /**
      * @param int $volume
+     * @return int
+     */
+    public function getServerId(int $volume) : int
+    {
+        return $this->volumes[$volume]->getServer()->getId();
+    }
+
+    /**
+     * @param int $volume
      * @return string
      */
     public function getServerDeliveryUrl(int $volume) : string

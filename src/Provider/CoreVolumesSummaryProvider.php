@@ -14,7 +14,7 @@ class CoreVolumesSummaryProvider implements ServiceProviderInterface
     public function register(Container $pimple) : void
     {
         $pimple['CoreVolumesSummary'] = function () use ($pimple) {
-            return new CoreVolumesSummary($pimple['ServerAPI'], $pimple['CoreStorageManager'], $pimple['Loop']);
+            return new CoreVolumesSummary($pimple['ServerAPI'], $pimple['CoreStorageManager'], $pimple['Loop'], $pimple['AverageTimeCollector']);
         };
     }
 }

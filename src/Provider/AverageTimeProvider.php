@@ -13,6 +13,6 @@ class AverageTimeProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple) : void
     {
-        $pimple['AverageTimeCollector'] = new AverageTimeCollector();
+        $pimple['AverageTimeCollector'] = new AverageTimeCollector($pimple['CoreStorageManager']);
     }
 }

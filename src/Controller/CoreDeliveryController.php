@@ -46,7 +46,8 @@ class CoreDeliveryController extends BaseController
             $start = microtime(true);
             $promise = $this->serverAPI->getFile($hash, $storagePosition);
             $response = await($promise, $this->loop);
-            $this->averageTimeCollector->addValue(microtime(true) - $start);
+            $storagePosition->getVolume();
+            $this->averageTimeCollector->addValue($storagePosition, microtime(true) - $start);
             return $this->jpegResponse(200, $response->getBody()->getContents());
         } else {
             return $this->textResponse(404, 'Not Found');
