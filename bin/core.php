@@ -19,9 +19,9 @@ $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryRou
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerAdminRoutingProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ClientForServerAPIProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\StatProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\AverageTimeProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreControllersProvider());
-$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreVolumesSummaryProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\KernelProvider(), ['Router' => $pimple['CoreRouter']]);
