@@ -37,7 +37,7 @@ class CoreControllersProvider implements ServiceProviderInterface
             return new CoreDashboardController(
                 $pimple['CoreVolumesSummary'],
                 $pimple['AverageTimeCollector'],
-                $pimple['Twig'],
+                $pimple['Twig']
             );
         };
 
