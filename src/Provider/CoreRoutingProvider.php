@@ -50,7 +50,7 @@ class CoreRoutingProvider implements ServiceProviderInterface
                 [
                     '_controller' =>
                         [
-                            $this->getController($pimple, 'VolumeController'),
+                            $this->getController($pimple, 'CoreVolumeExportController'),
                             'serialize'
                         ]
                 ]
