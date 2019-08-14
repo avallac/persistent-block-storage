@@ -51,6 +51,9 @@ class CoreUploadController extends BaseController
                 }
                 $promise = $this->serverAPI->upload($storagePosition, $data);
                 $response = await($promise, $this->loop);
+                if ($md5 !== $response->getHeader('md5')[0]) {
+                    print 'md5 mismatch!! "' . $md5 . '" != "'. $response->getHeader('md5')[0] . '"\n';
+                }
                 if ($response->getStatusCode() === 200) {
                     if (!$newRecord) {
                         $this->headerStorage->markOk($md5);
@@ -66,7 +69,7 @@ class CoreUploadController extends BaseController
             }
         } catch (\Exception $e) {
             $this->headerStorage->rollBack();
-            return $this->textResponse(503, 'Error');
+            return $this->textResponse(503, $e->getMessage() . ' ' . get_class($e));
         }
     }
 }

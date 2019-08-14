@@ -39,11 +39,12 @@ class BaseController
     /**
      * @param int $code
      * @param string $text
+     * @param string $md5
      * @return Response
      */
-    public function textResponse(int $code, string $text) : Response
+    public function textResponse(int $code, string $text, string $md5 = '') : Response
     {
-        return $this->response($code, $text, 'text/plain');
+        return $this->response($code, $text, 'text/plain', $md5);
     }
 
     /**
@@ -60,10 +61,11 @@ class BaseController
      * @param int $code
      * @param string $text
      * @param string $contentType
+     * @param string $md5
      * @return Response
      */
-    public function response(int $code, string $text, string $contentType)
+    public function response(int $code, string $text, string $contentType, string $md5 = '')
     {
-        return new Response($code, ['Content-Type' => $contentType], $text);
+        return new Response($code, ['Content-Type' => $contentType, 'md5' => $md5], $text);
     }
 }

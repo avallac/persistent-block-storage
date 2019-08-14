@@ -49,7 +49,7 @@ class ServerUploadController extends BaseController
         if (($size === strlen($data)) && ($md5 === md5($data))) {
             $position = new StoragePosition($volume, $seek, strlen($data));
             $this->storageManager->write($position, $data);
-            return $this->textResponse(200, 'OK');
+            return $this->textResponse(200, 'OK', $md5);
         }
         return $this->textResponse(400, 'Data corruption');
     }
