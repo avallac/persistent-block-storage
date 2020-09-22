@@ -4,7 +4,7 @@ namespace AVAllAC\PersistentBlockStorage\Exception;
 
 use Exception;
 
-class BadConfigException extends Exception
+class VolumeBadHeader extends Exception
 {
 
 }

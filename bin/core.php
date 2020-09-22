@@ -11,6 +11,7 @@ $loop = React\EventLoop\Factory::create();
 $pimple = new Pimple\Container();
 $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/config.yml');
 $pimple['Loop'] = React\EventLoop\Factory::create();
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\LoggerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\MicroTimeProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\TwigProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\DatabaseProvider());
@@ -26,11 +27,17 @@ $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvid
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreVolumesSummaryProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\KernelProvider(), ['Router' => $pimple['CoreRouter']]);
 
+/** @var \AVAllAC\PersistentBlockStorage\Service\Logger $logger */
+$logger = $pimple[\AVAllAC\PersistentBlockStorage\Service\Logger::class];
+$logger->initConsoleOutput();
 $webRoot = __DIR__ . '/../webroot/';
 $server = new Server([new WebrootPreloadMiddleware($webRoot), [$pimple['Kernel'], 'handle']]);
 $socket = new React\Socket\Server($pimple['config']['core']['bind'], $pimple['Loop']);
 $server->listen($socket);
-print 'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress()) . PHP_EOL;
+$logger->info(
+    'init',
+    'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress())
+);
 while (true) {
     $pimple['Loop']->run();
 }

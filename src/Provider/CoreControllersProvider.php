@@ -7,6 +7,8 @@ use AVAllAC\PersistentBlockStorage\Controller\CoreUploadController;
 use AVAllAC\PersistentBlockStorage\Controller\CoreDeliveryController;
 use AVAllAC\PersistentBlockStorage\Controller\CoreReportController;
 use AVAllAC\PersistentBlockStorage\Controller\CoreVolumeExportController;
+use AVAllAC\PersistentBlockStorage\Controller\CoreConfigController;
+use AVAllAC\PersistentBlockStorage\Service\Logger;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
@@ -50,7 +52,14 @@ class CoreControllersProvider implements ServiceProviderInterface
             return new CoreUploadController(
                 $pimple['ServerAPI'],
                 $pimple['HeaderStorage'],
-                $pimple['Loop']
+                $pimple['Loop'],
+                $pimple[Logger::class]
+            );
+        };
+
+        $pimple[CoreConfigController::class] = function () use ($pimple) {
+            return new CoreConfigController(
+                $pimple['CoreStorageManager']
             );
         };
     }

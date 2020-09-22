@@ -4,6 +4,7 @@ namespace AVAllAC\PersistentBlockStorage\Provider;
 
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use PDO;
 
 class DatabaseProvider implements ServiceProviderInterface
 {
@@ -16,7 +17,7 @@ class DatabaseProvider implements ServiceProviderInterface
             $pdo = $pimple['config']['core']['database']['dsn'] ?? null;
             $username = $pimple['config']['core']['database']['username'] ?? null;
             $password = $pimple['config']['core']['database']['password'] ?? null;
-            return new \PDO($pdo, $username, $password);
+            return new PDO($pdo, $username, $password);
         };
     }
 }

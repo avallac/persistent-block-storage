@@ -2,7 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Exception;
 
-class ResourceNotFoundException extends \Exception
+use Exception;
+
+class ResourceNotFoundException extends Exception
 {
 
 }

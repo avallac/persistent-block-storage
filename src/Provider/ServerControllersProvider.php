@@ -5,6 +5,7 @@ namespace AVAllAC\PersistentBlockStorage\Provider;
 use AVAllAC\PersistentBlockStorage\Controller\ServerStatusController;
 use AVAllAC\PersistentBlockStorage\Controller\ServerUploadController;
 use AVAllAC\PersistentBlockStorage\Controller\ServerDeliveryController;
+use AVAllAC\PersistentBlockStorage\Service\Logger;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 
@@ -24,11 +25,11 @@ class ServerControllersProvider implements ServiceProviderInterface
         };
 
         $pimple['ServerUploadController'] = function () use ($pimple) {
-            return new ServerUploadController($pimple['ServerStorageManager']);
+            return new ServerUploadController($pimple['ServerStorageManager'], $pimple[Logger::class]);
         };
 
         $pimple['ServerDeliveryController'] = function () use ($pimple) {
-            return new ServerDeliveryController($pimple['ServerStorageManager']);
+            return new ServerDeliveryController($pimple['ServerStorageManager'], $pimple[Logger::class]);
         };
     }
 }

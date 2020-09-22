@@ -15,7 +15,8 @@ class CoreStorageManagerProvider implements ServiceProviderInterface
     {
         $pimple['CoreStorageManager'] = function () use ($pimple) {
             $servers = $pimple['config']['core']['servers'];
-            return new CoreStorageManager($servers);
+            $volumes = $pimple['config']['volumes'];
+            return new CoreStorageManager($servers, $volumes);
         };
     }
 }

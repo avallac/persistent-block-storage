@@ -10,6 +10,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use AVAllAC\PersistentBlockStorage\Controller\CoreDashboardController;
+use AVAllAC\PersistentBlockStorage\Controller\CoreConfigController;
 
 class CoreRoutingProvider implements ServiceProviderInterface
 {
@@ -59,16 +60,26 @@ class CoreRoutingProvider implements ServiceProviderInterface
 
             # volumes
             $route = new Route(
+                '/',
+                ['_controller' =>
+                    [
+                        $this->getController($pimple, 'CoreDashboardController'),
+                        CoreDashboardController::VOLUMES
+                    ]
+                ]
+            );
+            $routes->add('root', $route);
+
+            $route = new Route(
                 '/volumes',
                 ['_controller' =>
                     [
                         $this->getController($pimple, 'CoreDashboardController'),
-                        'volumes'
+                        CoreDashboardController::VOLUMES
                     ]
                 ]
             );
             $routes->add(CoreDashboardController::VOLUMES, $route);
-
 
             # servers
             $route = new Route(
@@ -76,7 +87,7 @@ class CoreRoutingProvider implements ServiceProviderInterface
                 ['_controller' =>
                     [
                         $this->getController($pimple, 'CoreDashboardController'),
-                        'servers'
+                        CoreDashboardController::SERVERS
                     ]
                 ]
             );
@@ -107,6 +118,19 @@ class CoreRoutingProvider implements ServiceProviderInterface
                 ]
             );
             $routes->add('report', $route);
+
+            # config
+            $route = new Route(
+                '/config',
+                [
+                    '_controller' =>
+                        [
+                            $this->getController($pimple, CoreConfigController::class),
+                            'config'
+                        ]
+                ]
+            );
+            $routes->add('config', $route);
 
             return $routes;
         };

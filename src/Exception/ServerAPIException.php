@@ -2,7 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Exception;
 
-class ServerAPIException extends \Exception
+use Exception;
+
+class ServerAPIException extends Exception
 {
 
 }

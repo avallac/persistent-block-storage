@@ -8,6 +8,7 @@ use React\Http\Response;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
+use Throwable;
 
 class Kernel
 {
@@ -15,18 +16,26 @@ class Kernel
     protected $statWriter;
     protected $username;
     protected $password;
+    protected $logger;
 
     /**
      * Kernel constructor.
      * @param UrlMatcherInterface $router
      * @param StatWriter $statWriter
+     * @param Logger $logger
      * @param null|string $username
      * @param null|string $password
      */
-    public function __construct(UrlMatcherInterface $router, StatWriter $statWriter, ?string $username, ?string $password)
-    {
+    public function __construct(
+        UrlMatcherInterface $router,
+        StatWriter $statWriter,
+        Logger $logger,
+        ?string $username,
+        ?string $password
+    ) {
         $this->router = $router;
         $this->statWriter = $statWriter;
+        $this->logger = $logger;
         $this->username = $username;
         $this->password = $password;
     }
@@ -55,9 +64,16 @@ class Kernel
             $route = $request->getUri()->getPath();
             $matched = $this->router->match($route);
             $params = array_merge($params, $matched);
+            $this->logger->debug(
+                'Kernel',
+                'resolve route',
+                [
+                    '_controller' => $params['_controller'],
+                ]
+            );
             unset($params['_controller']);
             unset($params['_route']);
-            return \call_user_func_array($matched['_controller'], $params);
+            return call_user_func_array($matched['_controller'], $params);
         } else {
             throw new UnauthorizedException();
         }
@@ -70,6 +86,15 @@ class Kernel
     public function handle(ServerRequestInterface $request) : Response
     {
         try {
+            $this->logger->debug(
+                'Kernel',
+                'input request',
+                [
+                    'path' => $request->getUri()->getPath(),
+                    'method' => $request->getMethod(),
+                    'port' => $request->getUri()->getPort()
+                ]
+            );
             $response = $this->route($request);
             $this->statWriter->addAction($response->getStatusCode());
             return $response;
@@ -82,9 +107,18 @@ class Kernel
         } catch (ResourceNotFoundException $e) {
             $this->statWriter->addAction(404);
             return new Response(404, ['Content-Type' => 'text/plain'], $e->getMessage());
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
+            $this->logger->error(
+                'Kernel',
+                'Unhandled exception',
+                [
+                    'class' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'trace' =>  $e->getTraceAsString()
+                ]
+            );
             $this->statWriter->addAction(503);
-            return new Response(503, ['Content-Type' => 'text/plain'], $e->getMessage());
+            return new Response(503, ['Content-Type' => 'text/plain'], 'error');
         }
     }
 }

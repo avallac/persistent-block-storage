@@ -7,11 +7,11 @@ use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException;
 class StoragePosition
 {
     /** @var int */
-    private $volume;
+    protected $volume;
     /** @var int */
-    private $seek;
+    protected $seek;
     /** @var int */
-    private $size;
+    protected $size;
 
     /**
      * StoragePosition constructor.
@@ -61,5 +61,14 @@ class StoragePosition
     public function getSize() :int
     {
         return $this->size;
+    }
+
+    public function toArray()
+    {
+        return [
+            'size' => $this->size,
+            'volume' => $this->volume,
+            'seek' => $this->seek
+        ];
     }
 }

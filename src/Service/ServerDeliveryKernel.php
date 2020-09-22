@@ -33,7 +33,7 @@ class ServerDeliveryKernel
         $seek = $request->getQueryParams()['seek'] ?? 0;
         $size = $request->getQueryParams()['size'] ?? 0;
         $position = new StoragePosition((int)$volume, (int)$seek, (int)$size);
-        $body = $this->storageManager->read($position);
+        $body = $this->storageManager->readBlock($position);
         return new Response(200, ['Content-Type' => 'text/plain'], $body);
     }
 }

@@ -6,6 +6,7 @@ $processManager = new \AVAllAC\PersistentBlockStorage\ProcessManager();
 $pimple = new Pimple\Container();
 $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/config.yml');
 $pimple['Loop'] = React\EventLoop\Factory::create();
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\LoggerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\MicroTimeProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryKernelProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
@@ -13,19 +14,26 @@ $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerControllers
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryRoutingProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerAdminRoutingProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\StatProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
 
 $username = $pimple['config']['auth']['username'] ?? null;
 $password = $pimple['config']['auth']['password'] ?? null;
 
+/** @var \AVAllAC\PersistentBlockStorage\Service\Logger $logger */
+$logger = $pimple[\AVAllAC\PersistentBlockStorage\Service\Logger::class];
+$logger->initConsoleOutput();
+
 $adminKernel = new AVAllAC\PersistentBlockStorage\Service\Kernel(
     $pimple['ServerAdminRouter'],
     $pimple['StatWriter'],
+    $logger,
     $username,
     $password
 );
 $deliveryKernel = new AVAllAC\PersistentBlockStorage\Service\Kernel(
     $pimple['ServerDeliveryRouter'],
     $pimple['StatWriter'],
+    $logger,
     $username,
     $password
 );

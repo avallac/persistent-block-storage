@@ -3,6 +3,8 @@
 namespace AVAllAC\PersistentBlockStorage\Service;
 
 use AVAllAC\PersistentBlockStorage\Model\StoragePosition;
+use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException;
+use AVAllAC\PersistentBlockStorage\Model\VolumeInfo;
 
 class HeaderSQLStorage implements HeaderStorage
 {
@@ -15,15 +17,15 @@ class HeaderSQLStorage implements HeaderStorage
     private $dbMarkBroken;
     private $dbMarkOk;
     private $dbStorageInfo;
-    private $blockSize;
     private $dbStorageInit;
     private $dbStorageUpdateCurrentVolume;
     private $dbStorageUpdateNextVolume;
+    protected $coreStorageManager;
 
-    public function __construct(\PDO $db, int $blockSize)
+    public function __construct(\PDO $db, CoreStorageManager $coreStorageManager)
     {
         $this->db = $db;
-        $this->blockSize = $blockSize;
+        $this->coreStorageManager = $coreStorageManager;
         $this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
         $sql = 'SELECT id FROM storage WHERE md5 = :HASH';
@@ -47,7 +49,7 @@ class HeaderSQLStorage implements HeaderStorage
         $sql = 'UPDATE storage SET broken = 0 WHERE md5 = :HASH';
         $this->dbMarkOk = $this->db->prepare($sql);
 
-        $sql = 'SELECT volume, pos FROM storage_last';
+        $sql = 'SELECT volume, pos FROM storage_last ORDER BY volume desc limit 1';
         $this->dbStorageInfo = $this->db->prepare($sql);
 
         $sql = 'INSERT INTO storage_last (volume, pos) VALUES (0, :newPos)';
@@ -162,22 +164,29 @@ class HeaderSQLStorage implements HeaderStorage
         $this->dbStorageInfo->execute();
         $e = $this->dbStorageInfo->fetch();
         if ($e !== false) {
-            if (($e['pos'] + $size) < $this->blockSize) {
+            $blockSize = -1;
+            if ($volume = $this->coreStorageManager->getVolumeInfo($e['volume'])) {
+                $blockSize = $volume->getSize();
+            }
+            if (($e['pos'] + $size) < $blockSize) {
                 $this->dbStorageUpdateCurrentVolume->execute([
                     'newPos' => $e['pos'] + $size,
                     'oldPos' => $e['pos']
                 ]);
                 return new StoragePosition($e['volume'], $e['pos'], $size);
             } else {
+                if (empty($this->coreStorageManager->getVolumeInfo($e['volume'] + 1))) {
+                    throw new IncorrectVolumeException();
+                }
                 $this->dbStorageUpdateNextVolume->execute([
-                    'newPos' => $size,
+                    'newPos' => $size + VolumeInfo::HEADER_SIZE,
                     'oldPos' => $e['pos']
                 ]);
-                return new StoragePosition($e['volume'] + 1, 0, $size);
+                return new StoragePosition($e['volume'] + 1, VolumeInfo::HEADER_SIZE, $size);
             }
         } else {
-            $this->dbStorageInit->execute(['newPos' => $size]);
-            return new StoragePosition(0, 0, $size);
+            $this->dbStorageInit->execute(['newPos' => $size + VolumeInfo::HEADER_SIZE]);
+            return new StoragePosition(0, VolumeInfo::HEADER_SIZE, $size);
         }
     }
 }

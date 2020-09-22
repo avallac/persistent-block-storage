@@ -2,7 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Exception;
 
-class VolumeWriteException extends \Exception
+use Exception;
+
+class VolumeWriteException extends Exception
 {
 
 }

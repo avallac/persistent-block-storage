@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use GuzzleHttp\Exception\GuzzleException;
 
 class DeepCheckVolumeCommand extends Command
 {
@@ -35,6 +36,11 @@ class DeepCheckVolumeCommand extends Command
             ->addArgument('volume', InputArgument::REQUIRED, 'Volume ID');
     }
 
+    /**
+     * @param $volume
+     * @return string
+     * @throws GuzzleException
+     */
     protected function getBinHeaders($volume)
     {
         $client = new Client();
@@ -43,6 +49,11 @@ class DeepCheckVolumeCommand extends Command
         return $request->getBody()->getContents();
     }
 
+    /**
+     * @param $hash
+     * @return string
+     * @throws GuzzleException
+     */
     protected function markBroken($hash)
     {
         $client = new Client();
@@ -54,8 +65,8 @@ class DeepCheckVolumeCommand extends Command
     /**
      * @param $volume
      * @param $output
+     * @throws GuzzleException
      * @throws IncorrectVolumeException
-     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
      */
     protected function checkVolume($volume, $output)
     {
@@ -80,8 +91,20 @@ class DeepCheckVolumeCommand extends Command
             $elementBin = substr($headers, $pos * 32, 32);
             $element = unpack('a16md5/Jseek/Jsize', $elementBin);
             fseek($volumeResource, $element['seek']);
-            $data = fread($volumeResource, $element['size']);
+            $headerBin = fread($volumeResource, ServerStorageManager::FILE_HEAD_SIZE);
+            $header = unpack('Jsize/a16md5', $headerBin);
+            $data = fread($volumeResource, $element['size'] - ServerStorageManager::FILE_HEAD_SIZE);
+            $error = false;
             if (md5($data, true) !== $element['md5']) {
+                $error = true;
+            }
+            if ($header['md5'] !== $element['md5']) {
+                $error = true;
+            }
+            if ($header['size'] !== $element['size']) {
+                $error = true;
+            }
+            if ($error) {
                 $errorNum++;
                 $output->writeln([
                     '#' . $errorNum,
@@ -108,9 +131,9 @@ class DeepCheckVolumeCommand extends Command
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
-     * @return int|void|null
+     * @return int|void
+     * @throws GuzzleException
      * @throws IncorrectVolumeException
-     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

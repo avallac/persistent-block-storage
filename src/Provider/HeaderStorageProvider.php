@@ -18,7 +18,7 @@ class HeaderStorageProvider implements ServiceProviderInterface
         $pimple['HeaderStorage'] = function () use ($pimple) {
             $storageType = $pimple['config']['core']['headerStorage'] ?? null;
             if ($storageType === 'sql') {
-                return new HeaderSQLStorage($pimple['Db'], $pimple['config']['blockSize']);
+                return new HeaderSQLStorage($pimple['Db'], $pimple['CoreStorageManager']);
             } elseif ($storageType === 'memory') {
                 return new HeaderMemoryStorage();
             } else {

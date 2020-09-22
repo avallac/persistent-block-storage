@@ -4,6 +4,10 @@ namespace AVAllAC\PersistentBlockStorage\Controller;
 
 use AVAllAC\PersistentBlockStorage\Model\StoragePosition;
 use AVAllAC\PersistentBlockStorage\Service\ServerStorageManager;
+use AVAllAC\PersistentBlockStorage\Service\Logger;
+use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException;
+use AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException;
+use AVAllAC\PersistentBlockStorage\Exception\VolumeWriteException;
 use React\Http\Response;
 use RingCentral\Psr7\Request;
 
@@ -11,15 +15,20 @@ class ServerUploadController extends BaseController
 {
     public const UPLOAD = 'upload';
 
-    private $storageManager;
+    protected $storageManager;
+    protected $logger;
 
     /**
      * ServerUploadController constructor.
      * @param ServerStorageManager $storageManager
+     * @param Logger $logger
      */
-    public function __construct(ServerStorageManager $storageManager)
-    {
+    public function __construct(
+        ServerStorageManager $storageManager,
+        Logger $logger
+    ) {
         $this->storageManager = $storageManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -29,10 +38,9 @@ class ServerUploadController extends BaseController
      * @param string $seek
      * @param string $size
      * @return Response
-     * @throws \AVAllAC\PersistentBlockStorage\Exception\CantOpenFileException
-     * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumeException
-     * @throws \AVAllAC\PersistentBlockStorage\Exception\IncorrectVolumePositionException
-     * @throws \AVAllAC\PersistentBlockStorage\Exception\VolumeWriteException
+     * @throws IncorrectVolumeException
+     * @throws IncorrectVolumePositionException
+     * @throws VolumeWriteException
      */
     public function upload(Request $request, string $md5, string $volume, string $seek, string $size) : Response
     {
@@ -41,14 +49,32 @@ class ServerUploadController extends BaseController
         $size = (int)$size;
         $data = $request->getBody()->getContents();
         if ($request->getMethod() !== 'PUT') {
+            $this->logger->debug(
+                'ServerUploadController',
+                'incorrect method '. $request->getMethod(),
+                ['path' => $request->getUri()->getPath()]
+            );
             return $this->textResponse(405, 'Method Not Allowed');
         }
         if (!$this->storageManager->volumeAvailable($volume)) {
+            $this->logger->debug(
+                'ServerUploadController',
+                'volume is not available #'. $volume
+            );
             return $this->textResponse(400, 'volume unavailable');
         }
-        if (($size === strlen($data)) && ($md5 === md5($data))) {
-            $position = new StoragePosition($volume, $seek, strlen($data));
-            $this->storageManager->write($position, $data);
+        if (($size === (strlen($data) + ServerStorageManager::FILE_HEAD_SIZE)) && ($md5 === md5($data))) {
+            $position = new StoragePosition($volume, $seek, $size);
+            $this->storageManager->write($position, $data, $md5);
+            $this->logger->debug(
+                'ServerUploadController',
+                'write to volume #'. $volume . ' successful',
+                [
+                    'size' => $size,
+                    'md5' => $md5,
+                    'seek' => $seek
+                ]
+            );
             return $this->textResponse(200, 'OK', $md5);
         }
         return $this->textResponse(400, 'Data corruption');

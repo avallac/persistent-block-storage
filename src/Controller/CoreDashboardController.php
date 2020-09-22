@@ -2,9 +2,10 @@
 
 namespace AVAllAC\PersistentBlockStorage\Controller;
 
-use AVAllAC\PersistentBlockStorage\Model\AverageTimeCollector;
 use AVAllAC\PersistentBlockStorage\Service\CoreVolumesSummary;
 use React\Http\Response;
+use Twig\Environment;
+use Exception;
 
 class CoreDashboardController extends BaseController
 {
@@ -14,7 +15,7 @@ class CoreDashboardController extends BaseController
     private $twig;
     private $coreSummary;
 
-    public function __construct(CoreVolumesSummary $coreSummary, \Twig_Environment $twig)
+    public function __construct(CoreVolumesSummary $coreSummary, Environment $twig)
     {
         $this->coreSummary = $coreSummary;
         $this->twig = $twig;
@@ -22,7 +23,7 @@ class CoreDashboardController extends BaseController
 
     /**
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function volumes() : Response
     {
@@ -33,7 +34,7 @@ class CoreDashboardController extends BaseController
 
     /**
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function servers() : Response
     {

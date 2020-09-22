@@ -2,7 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Exception;
 
-class IncorrectVolumePositionException extends \Exception
+use Exception;
+
+class IncorrectVolumePositionException extends Exception
 {
 
 }

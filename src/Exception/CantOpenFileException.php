@@ -2,7 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Exception;
 
-class CantOpenFileException extends \Exception
+use Exception;
+
+class CantOpenFileException extends Exception
 {
 
 }

@@ -10,6 +10,7 @@ use function Clue\React\Block\await;
 use React\EventLoop\LoopInterface;
 use React\Http\Response;
 use RingCentral\Psr7\Request;
+use Exception;
 
 class CoreDeliveryController extends BaseController
 {
@@ -38,7 +39,7 @@ class CoreDeliveryController extends BaseController
      * @param string $hash
      * @param string $type
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function getOriginal(Request $request, string $hash, string $type) : Response
     {

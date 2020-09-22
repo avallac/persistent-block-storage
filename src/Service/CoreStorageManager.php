@@ -2,8 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Service;
 
-use \AVAllAC\PersistentBlockStorage\Model\VolumeInfo;
-use \AVAllAC\PersistentBlockStorage\Model\ServerInfo;
+use AVAllAC\PersistentBlockStorage\Model\VolumeInfo;
+use AVAllAC\PersistentBlockStorage\Model\ServerInfo;
+use AVAllAC\PersistentBlockStorage\Exception\VolumeNoInformationException;
 
 class CoreStorageManager
 {
@@ -15,15 +16,16 @@ class CoreStorageManager
     /**
      * CoreStorageManager constructor.
      * @param array $servers
+     * @param array $volumes
      */
-    public function __construct(array $servers)
+    public function __construct(array $servers, array $volumes)
     {
         $this->servers = [];
         $this->volumes = [];
         foreach ($servers as $serverId => $serverData) {
             $server = new ServerInfo($serverId, $serverData['deliveryUrl'], $serverData['adminUrl']);
             $this->servers[] = $server;
-            $volumes = preg_replace_callback(
+            $vols = preg_replace_callback(
                 '/(\d+)-(\d+)/',
                 function ($m) {
                     return implode(',', range($m[1], $m[2]));
@@ -31,8 +33,12 @@ class CoreStorageManager
                 $serverData['volumes']
             );
 
-            foreach (explode(',', $volumes) as $item) {
-                $this->volumes[$item] = new VolumeInfo((int)$item, $server);
+            foreach (explode(',', $vols) as $item) {
+                if (empty($volumes[$item])) {
+                    throw new VolumeNoInformationException('no details about block #'. $item);
+                }
+                $info = $volumes[$item];
+                $this->volumes[$item] = new VolumeInfo((int)$item, $server, $info['uid'], $info['size']);
             }
         }
     }
@@ -78,5 +84,10 @@ class CoreStorageManager
     public function getVolumes() : array
     {
         return $this->volumes;
+    }
+
+    public function getVolumeInfo($id) : ?VolumeInfo
+    {
+        return $this->volumes[$id] ?? null;
     }
 }

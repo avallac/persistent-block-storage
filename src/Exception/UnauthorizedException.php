@@ -2,7 +2,9 @@
 
 namespace AVAllAC\PersistentBlockStorage\Exception;
 
-class UnauthorizedException extends \Exception
+use Exception;
+
+class UnauthorizedException extends Exception
 {
 
 }
