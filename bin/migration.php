@@ -11,6 +11,7 @@ $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\LoggerProvider())
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\DatabaseProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\HeaderStorageProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
 
 
