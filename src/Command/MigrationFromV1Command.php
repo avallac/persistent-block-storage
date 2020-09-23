@@ -81,7 +81,7 @@ class MigrationFromV1Command extends Command
                 if (md5($data) !== bin2hex($element['md5'])) {
                     throw new VolumeReadException();
                 }
-                $position = $this->headerStorage->insert($element['md5'], $element['size']);
+                $position = $this->headerStorage->insert(bin2hex($element['md5']), $element['size']);
                 $this->storageManager->write($position, $data, md5($data));
             }
             $counted++;
