@@ -224,6 +224,14 @@ class ServerStorageManager
             $pack = pack('Ja16', $position->getSize(), hex2bin($md5));
             $result = fwrite($this->getVolumeResource($position->getVolume()), $pack . $data);
             if ($result !== $position->getSize()) {
+                $this->logger->error(
+                    'ServerStorageManager',
+                    'fwrite result != data size',
+                    [
+                        'real result' => md5($result),
+                        'data size' => $position->getSize(),
+                    ]
+                );
                 throw new VolumeWriteException('fwrite != data size');
             }
             return $result;
