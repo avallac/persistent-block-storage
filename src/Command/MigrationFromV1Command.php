@@ -67,7 +67,7 @@ class MigrationFromV1Command extends Command
         $progressBar = new ProgressBar($output, $elements);
         $format = '%message% %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%';
         $progressBar->setFormat($format);
-        $progressBar->setMessage($volume . ':' . $this->storageManager->getVolumePath($volume));
+        $progressBar->setMessage('Migration');
         $progressBar->start();
         $lastUpdate = 0;
         $counted = 0;
