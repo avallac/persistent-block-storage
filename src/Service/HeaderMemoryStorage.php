@@ -50,6 +50,19 @@ class HeaderMemoryStorage implements HeaderStorage
     }
 
     /**
+     * @return array
+     */
+    public function exportAll() : array
+    {
+        $result = [];
+        foreach ($this->db as $item) {
+            $result[$item['md5']] = $item['size'];
+        }
+
+        return $result;
+    }
+
+    /**
      * @param string $md5
      * @param int $size
      * @return StoragePosition

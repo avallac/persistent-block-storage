@@ -8,7 +8,6 @@ $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/c
 $pimple['Loop'] = React\EventLoop\Factory::create();
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\LoggerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\MicroTimeProvider());
-$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryKernelProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerControllersProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerDeliveryRoutingProvider());

@@ -10,6 +10,7 @@ interface HeaderStorage
 
     public function search(string $hash) : ?StoragePosition;
     public function export(int $volume) : string;
+    public function exportAll() : array;
     public function insert(string $md5, int $size) : StoragePosition;
     public function checkExists(string $hash) : bool;
     public function checkExistsValid(string $hash) : bool;

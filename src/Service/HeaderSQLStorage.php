@@ -8,18 +8,19 @@ use AVAllAC\PersistentBlockStorage\Model\VolumeInfo;
 
 class HeaderSQLStorage implements HeaderStorage
 {
-    private $db;
-    private $dbExists;
-    private $dbValid;
-    private $dbSearch;
-    private $dbExport;
-    private $dbInsert;
-    private $dbMarkBroken;
-    private $dbMarkOk;
-    private $dbStorageInfo;
-    private $dbStorageInit;
-    private $dbStorageUpdateCurrentVolume;
-    private $dbStorageUpdateNextVolume;
+    protected $db;
+    protected $dbExists;
+    protected $dbValid;
+    protected $dbSearch;
+    protected $dbExport;
+    protected $dbExportAll;
+    protected $dbInsert;
+    protected $dbMarkBroken;
+    protected $dbMarkOk;
+    protected $dbStorageInfo;
+    protected $dbStorageInit;
+    protected $dbStorageUpdateCurrentVolume;
+    protected $dbStorageUpdateNextVolume;
     protected $coreStorageManager;
 
     public function __construct(\PDO $db, CoreStorageManager $coreStorageManager)
@@ -39,6 +40,9 @@ class HeaderSQLStorage implements HeaderStorage
 
         $sql = 'SELECT md5, seek, size FROM storage WHERE volume = :VOLUME ORDER BY seek';
         $this->dbExport = $this->db->prepare($sql);
+
+        $sql = 'SELECT md5,size FROM storage';
+        $this->dbExportAll = $this->db->prepare($sql);
 
         $sql = 'INSERT INTO storage (volume,md5,seek,size) VALUES (:volume, :md5, :seek, :size)';
         $this->dbInsert = $this->db->prepare($sql);
@@ -89,6 +93,20 @@ class HeaderSQLStorage implements HeaderStorage
             $output .= pack('a16J2', hex2bin($e['md5']), $e['seek'], $e['size']);
         }
         return $output;
+    }
+
+    /**
+     * @return array
+     */
+    public function exportAll() : array
+    {
+        $result = [];
+        $this->dbExportAll->execute();
+        while ($e = $this->dbExport->fetch(\PDO::FETCH_ASSOC)) {
+            $result[$e['md5']] = $e['size'];
+        }
+
+        return $result;
     }
 
     /**
