@@ -10,6 +10,7 @@ $pimple['config'] = \Symfony\Component\Yaml\Yaml::parseFile(__DIR__ . '/../etc/c
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\LoggerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\ServerStorageManagerProvider());
 $pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\HeaderStorageProvider());
+$pimple->register(new \AVAllAC\PersistentBlockStorage\Provider\CoreRoutingProvider());
 
 
 $application = new \Symfony\Component\Console\Application();
