@@ -109,7 +109,9 @@ class DeepCheckVolumeCommand extends Command
                 $output->writeln([
                     '#' . $errorNum,
                     'Seek :' . $element['seek'] . ' ' . 'Size: ' . $element['size'],
+                    'HeaderSize: ' . $header['size'],
                     'Expected MD5: <comment>' . bin2hex($element['md5']) . '</comment>',
+                    'Header   MD5: <comment>' . bin2hex($header['md5']) . '</comment>',
                     'Result   MD5: <comment>' . md5($data) . '</comment>',
                     ''
                 ]);
