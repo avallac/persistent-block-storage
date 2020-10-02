@@ -49,7 +49,7 @@ class MigrationFromV1Command extends Command
      */
     protected function getBinHeaders($url, $volume)
     {
-        $client = new Client();
+        $client = new Client(['timeout' => 120]);
         $request = $client->request('GET', $url . '/volume/export/' . $volume);
         return $request->getBody()->getContents();
     }
