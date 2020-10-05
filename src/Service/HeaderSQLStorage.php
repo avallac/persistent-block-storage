@@ -102,7 +102,7 @@ class HeaderSQLStorage implements HeaderStorage
     {
         $result = [];
         $this->dbExportAll->execute();
-        while ($e = $this->dbExport->fetch(\PDO::FETCH_ASSOC)) {
+        while ($e = $this->dbExportAll->fetch(\PDO::FETCH_ASSOC)) {
             $result[$e['md5']] = $e['size'];
         }
 
